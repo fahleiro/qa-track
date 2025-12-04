@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+api/node_modules/
+api/package-lock.json
+painel/node_modules/
+painel/package-lock.json
+
+# Build outputs
+frontend/dist/
+frontend/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PostgreSQL data (if using volumes)
+postgres-data/
+
+# Public (old structure)
+public/
+

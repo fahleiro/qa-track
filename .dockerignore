@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.DS_Store
+public
+api/node_modules
+api/package-lock.json
+painel/node_modules
+painel/package-lock.json
+painel/dist
+

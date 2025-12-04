@@ -1,0 +1,20 @@
+# Garante que arquivos shell sempre usem LF (Unix) mesmo no Windows
+*.sh text eol=lf
+
+# Arquivos de texto normais
+*.js text
+*.jsx text
+*.json text
+*.css text
+*.html text
+*.md text
+
+# Arquivos binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+

@@ -1,0 +1,414 @@
+/* ====================================
+   ESTILOS DA PÁGINA FLOW - TIMELINE
+   ==================================== */
+
+.flow-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 20px;
+    max-height: calc(100vh - 60px);
+    overflow: hidden;
+}
+
+.flow-empty {
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.flow-empty p {
+    color: var(--text-color);
+    opacity: 0.6;
+    font-size: 18px;
+}
+
+.btn-create-flow {
+    background-color: var(--color-pink);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-create-flow:hover {
+    background-color: #d10865;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(237, 9, 115, 0.3);
+}
+
+/* Header do Flow */
+.flow-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.flow-header h2 {
+    margin: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.flow-selector {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.flow-selector select {
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 2px solid var(--input-border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    min-width: 200px;
+}
+
+.flow-selector select:focus {
+    outline: none;
+    border-color: var(--color-pink);
+}
+
+.btn-add-flow {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background-color: var(--color-pink);
+    color: white;
+    border-radius: 8px;
+    font-size: 0;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-flow::before,
+.btn-add-flow::after {
+    content: '';
+    position: absolute;
+    background-color: white;
+    border-radius: 2px;
+}
+
+.btn-add-flow::before {
+    width: 16px;
+    height: 3px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.btn-add-flow::after {
+    width: 3px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.btn-add-flow:hover {
+    background-color: #d10865;
+}
+
+.btn-delete-flow {
+    background: none;
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.btn-delete-flow:hover {
+    background-color: #EF444410;
+    border-color: #EF4444;
+}
+
+/* Formulário de criação */
+.flow-create-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--panel-bg-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.flow-create-form input {
+    flex: 1;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 2px solid var(--input-border-color);
+    border-radius: 6px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.flow-create-form input:focus {
+    outline: none;
+    border-color: var(--color-pink);
+}
+
+.flow-create-form button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.flow-create-form button:first-of-type {
+    background-color: var(--color-pink);
+    color: white;
+}
+
+.flow-create-form button:first-of-type:hover:not(:disabled) {
+    background-color: #d10865;
+}
+
+.flow-create-form button:first-of-type:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.flow-create-form button:last-of-type {
+    background-color: var(--color-blue);
+    color: white;
+}
+
+.flow-create-form button:last-of-type:hover {
+    background-color: #1a1742;
+}
+
+/* Adicionar cenário */
+.flow-add-scenario {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.flow-add-scenario select {
+    flex: 1;
+    max-width: 400px;
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 2px solid var(--input-border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.flow-add-scenario select:focus {
+    outline: none;
+    border-color: var(--color-pink);
+}
+
+.flow-add-scenario button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: var(--color-pink);
+    color: white;
+    transition: all 0.2s;
+}
+
+.flow-add-scenario button:hover:not(:disabled) {
+    background-color: #d10865;
+}
+
+.flow-add-scenario button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ====================================
+   TIMELINE DO FLOW
+   ==================================== */
+
+.flow-timeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 30px 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+/* Node genérico */
+.flow-node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 200px;
+    max-width: 400px;
+    transition: all 0.2s ease;
+}
+
+/* Node START */
+.flow-node-start {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 12px;
+    padding: 12px 24px;
+    min-width: auto;
+    border-radius: 20px;
+}
+
+/* Node de cenário */
+.flow-node-scenario {
+    background-color: var(--panel-bg-color);
+    border: 2px solid var(--color-blue);
+    color: var(--text-color);
+    cursor: pointer;
+    position: relative;
+}
+
+.flow-node-scenario:hover {
+    border-color: var(--color-pink);
+    box-shadow: 0 4px 12px rgba(237, 9, 115, 0.2);
+    transform: translateY(-2px);
+}
+
+.flow-node-position {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--color-blue);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.flow-node-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.flow-node-remove {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #999;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.flow-node-remove:hover {
+    color: #EF4444;
+}
+
+/* Conector (seta) entre nodes */
+.flow-connector {
+    width: 2px;
+    height: 30px;
+    background-color: var(--border-color);
+    position: relative;
+}
+
+.flow-connector::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--border-color);
+}
+
+/* Mensagem de flow vazio */
+.flow-empty-message {
+    color: var(--text-color);
+    opacity: 0.5;
+    font-style: italic;
+    margin-top: 20px;
+}
+
+/* ====================================
+   MODAL DE CENÁRIO
+   ==================================== */
+
+.flow-scenario-modal {
+    max-width: 500px;
+}
+
+.flow-scenario-modal h3 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    padding-right: 30px;
+}
+
+.flow-scenario-detail {
+    margin-bottom: 16px;
+}
+
+.flow-scenario-detail label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--clr-midnight-a30);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.flow-scenario-detail p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-color);
+    line-height: 1.5;
+    padding: 12px;
+    background-color: var(--panel-bg-color);
+    border-radius: 6px;
+    border-left: 3px solid var(--color-pink);
+}
