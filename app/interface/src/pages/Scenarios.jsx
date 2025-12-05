@@ -14,11 +14,17 @@ export default function Scenarios() {
   const [filterFeature, setFilterFeature] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   
+  // Menu de opcoes
+  const [menuOpen, setMenuOpen] = useState(null)
+  
   // Modal
   const [modal, setModal] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [viewMode, setViewMode] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
   const [originalPrerequisites, setOriginalPrerequisites] = useState([])
   const [originalExpectations, setOriginalExpectations] = useState([])
+  const [originalForm, setOriginalForm] = useState(null)
   const [form, setForm] = useState({
     title: '',
     feature_id: '',
@@ -74,11 +80,29 @@ export default function Scenarios() {
     ? features.filter(f => f.system_id === parseInt(filterSystem))
     : features
 
+  // Menu handlers
+  const handleCardClick = (e, scenarioId) => {
+    e.stopPropagation()
+    setMenuOpen(menuOpen === scenarioId ? null : scenarioId)
+  }
+
+  // Fechar menu ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = () => setMenuOpen(null)
+    if (menuOpen) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [menuOpen])
+
   // Modal handlers
   const openCreate = () => {
     setEditing(null)
+    setViewMode(false)
+    setHasChanges(false)
     setOriginalPrerequisites([])
     setOriginalExpectations([])
+    setOriginalForm(null)
     setForm({
       title: '',
       feature_id: '',
@@ -90,11 +114,14 @@ export default function Scenarios() {
     setModal(true)
   }
 
-  const openEdit = (scenario) => {
+  const openView = (scenario) => {
+    setMenuOpen(null)
     setEditing(scenario)
+    setViewMode(true)
+    setHasChanges(false)
     setOriginalPrerequisites(scenario.prerequisites || [])
     setOriginalExpectations(scenario.expectations || [])
-    setForm({
+    const formData = {
       title: scenario.title,
       feature_id: scenario.feature_id || '',
       status_id: scenario.status_id || '',
@@ -105,15 +132,55 @@ export default function Scenarios() {
       expectations: scenario.expectations?.length > 0 
         ? scenario.expectations.map(e => e.description) 
         : ['']
-    })
+    }
+    setForm(formData)
+    setOriginalForm(formData)
+    setModal(true)
+  }
+
+  const openEdit = (scenario) => {
+    setMenuOpen(null)
+    setEditing(scenario)
+    setViewMode(false)
+    setHasChanges(false)
+    setOriginalPrerequisites(scenario.prerequisites || [])
+    setOriginalExpectations(scenario.expectations || [])
+    const formData = {
+      title: scenario.title,
+      feature_id: scenario.feature_id || '',
+      status_id: scenario.status_id || '',
+      system_ids: scenario.systems?.map(s => s.id) || [],
+      prerequisites: scenario.prerequisites?.length > 0 
+        ? scenario.prerequisites.map(p => p.description) 
+        : [''],
+      expectations: scenario.expectations?.length > 0 
+        ? scenario.expectations.map(e => e.description) 
+        : ['']
+    }
+    setForm(formData)
+    setOriginalForm(formData)
     setModal(true)
   }
 
   const closeModal = () => {
+    if (hasChanges && !viewMode) {
+      if (!confirm('Há edições realizadas não salvas. Deseja Cancelar?')) {
+        return
+      }
+    }
     setModal(false)
     setEditing(null)
+    setViewMode(false)
+    setHasChanges(false)
     setOriginalPrerequisites([])
     setOriginalExpectations([])
+    setOriginalForm(null)
+  }
+
+  // Detectar alteracoes
+  const checkChanges = (newForm) => {
+    if (!originalForm) return false
+    return JSON.stringify(newForm) !== JSON.stringify(originalForm)
   }
 
   const handleSave = async () => {
@@ -185,31 +252,45 @@ export default function Scenarios() {
   }
 
   const addField = (field) => {
-    setForm(prev => ({ ...prev, [field]: [...prev[field], ''] }))
+    const newForm = { ...form, [field]: [...form[field], ''] }
+    setForm(newForm)
+    setHasChanges(checkChanges(newForm))
   }
 
   const updateField = (field, index, value) => {
-    setForm(prev => ({
-      ...prev,
-      [field]: prev[field].map((v, i) => i === index ? value : v)
-    }))
+    const newForm = {
+      ...form,
+      [field]: form[field].map((v, i) => i === index ? value : v)
+    }
+    setForm(newForm)
+    setHasChanges(checkChanges(newForm))
   }
 
   const removeField = (field, index) => {
     if (form[field].length <= 1) return
-    setForm(prev => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index)
-    }))
+    const newForm = {
+      ...form,
+      [field]: form[field].filter((_, i) => i !== index)
+    }
+    setForm(newForm)
+    setHasChanges(checkChanges(newForm))
   }
 
   const toggleSystem = (systemId) => {
-    setForm(prev => ({
-      ...prev,
-      system_ids: prev.system_ids.includes(systemId)
-        ? prev.system_ids.filter(id => id !== systemId)
-        : [...prev.system_ids, systemId]
-    }))
+    const newForm = {
+      ...form,
+      system_ids: form.system_ids.includes(systemId)
+        ? form.system_ids.filter(id => id !== systemId)
+        : [...form.system_ids, systemId]
+    }
+    setForm(newForm)
+    setHasChanges(checkChanges(newForm))
+  }
+
+  const updateFormField = (field, value) => {
+    const newForm = { ...form, [field]: value }
+    setForm(newForm)
+    setHasChanges(checkChanges(newForm))
   }
 
   return (
@@ -302,45 +383,57 @@ export default function Scenarios() {
         ) : (
           <div className="list">
             {filtered.map(scenario => (
-              <div key={scenario.id} className="list-item" onClick={() => openEdit(scenario)}>
-                <div className="list-item-content">
-                  <div className="list-item-title">
-                    <span className="tag tag-id">#{scenario.id}</span>
-                    {' '}{scenario.title}
-                  </div>
-                  <div className="list-item-details">
-                    {scenario.status && (
-                      <div className="detail-row">
-                        <span className="detail-label">Status:</span>
-                        <span className="tag tag-status">{scenario.status.title}</span>
-                      </div>
-                    )}
-                    {scenario.feature && (
-                      <div className="detail-row">
-                        <span className="detail-label">Feature:</span>
-                        <span className="tag tag-feature">{scenario.feature.title}</span>
-                      </div>
-                    )}
-                    {scenario.systems?.length > 0 && (
-                      <div className="detail-row">
-                        <span className="detail-label">Sistemas:</span>
-                        <div className="detail-tags">
-                          {scenario.systems.map(sys => (
-                            <span key={sys.id} className="tag tag-system">{sys.title}</span>
-                          ))}
+              <div key={scenario.id} className="list-item-wrapper">
+                <div className="list-item" onClick={(e) => handleCardClick(e, scenario.id)}>
+                  <div className="list-item-content">
+                    <div className="list-item-title">
+                      <span className="tag tag-id">#{scenario.id}</span>
+                      {' '}{scenario.title}
+                    </div>
+                    <div className="list-item-details">
+                      {scenario.status && (
+                        <div className="detail-row">
+                          <span className="detail-label">Status:</span>
+                          <span className="tag tag-status">{scenario.status.title}</span>
                         </div>
-                      </div>
-                    )}
+                      )}
+                      {scenario.feature && (
+                        <div className="detail-row">
+                          <span className="detail-label">Feature:</span>
+                          <span className="tag tag-feature">{scenario.feature.title}</span>
+                        </div>
+                      )}
+                      {scenario.systems?.length > 0 && (
+                        <div className="detail-row">
+                          <span className="detail-label">Sistemas:</span>
+                          <div className="detail-tags">
+                            {scenario.systems.map(sys => (
+                              <span key={sys.id} className="tag tag-system">{sys.title}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="list-item-actions">
+                    <button 
+                      className="btn btn-ghost btn-icon"
+                      onClick={(e) => handleDelete(scenario.id, e)}
+                    >
+                      ×
+                    </button>
                   </div>
                 </div>
-                <div className="list-item-actions">
-                  <button 
-                    className="btn btn-ghost btn-icon"
-                    onClick={(e) => handleDelete(scenario.id, e)}
-                  >
-                    ×
-                  </button>
-                </div>
+                {menuOpen === scenario.id && (
+                  <div className="action-menu" onClick={(e) => e.stopPropagation()}>
+                    <button className="action-menu-item" onClick={() => openView(scenario)}>
+                      Visualizar
+                    </button>
+                    <button className="action-menu-item" onClick={() => openEdit(scenario)}>
+                      Editar
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -352,19 +445,22 @@ export default function Scenarios() {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">{editing ? 'Editar Cenário' : 'Novo Cenário'}</h2>
+              <h2 className="modal-title">
+                {viewMode ? 'Visualizar Cenário' : (editing ? 'Editar Cenário' : 'Novo Cenário')}
+              </h2>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
             
             <div className="modal-body">
               <div className="form-group">
-                <label className="form-label">Título *</label>
+                <label className="form-label">Título {!viewMode && '*'}</label>
                 <input
                   type="text"
                   className="form-input"
                   value={form.title}
-                  onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) => updateFormField('title', e.target.value)}
                   placeholder="Título do cenário"
+                  disabled={viewMode}
                 />
               </div>
 
@@ -374,7 +470,8 @@ export default function Scenarios() {
                   <select
                     className="form-input"
                     value={form.feature_id}
-                    onChange={(e) => setForm(prev => ({ ...prev, feature_id: e.target.value }))}
+                    onChange={(e) => updateFormField('feature_id', e.target.value)}
+                    disabled={viewMode}
                   >
                     <option value="">Selecione...</option>
                     {features.map(f => (
@@ -387,7 +484,8 @@ export default function Scenarios() {
                   <select
                     className="form-input"
                     value={form.status_id}
-                    onChange={(e) => setForm(prev => ({ ...prev, status_id: e.target.value }))}
+                    onChange={(e) => updateFormField('status_id', e.target.value)}
+                    disabled={viewMode}
                   >
                     <option value="">Selecione...</option>
                     {statuses.map(s => (
@@ -405,7 +503,8 @@ export default function Scenarios() {
                       key={sys.id}
                       type="button"
                       className={`btn btn-sm ${form.system_ids.includes(sys.id) ? 'btn-primary' : ''}`}
-                      onClick={() => toggleSystem(sys.id)}
+                      onClick={() => !viewMode && toggleSystem(sys.id)}
+                      disabled={viewMode}
                     >
                       {sys.title}
                     </button>
@@ -414,7 +513,7 @@ export default function Scenarios() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Pré-requisitos *</label>
+                <label className="form-label">Pré-requisitos {!viewMode && '*'}</label>
                 <div className="dynamic-list">
                   {form.prerequisites.map((pre, i) => (
                     <div key={i} className="dynamic-item">
@@ -424,29 +523,34 @@ export default function Scenarios() {
                         value={pre}
                         onChange={(e) => updateField('prerequisites', i, e.target.value)}
                         placeholder={`Pré-requisito ${i + 1}`}
+                        disabled={viewMode}
                       />
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-icon"
-                        onClick={() => removeField('prerequisites', i)}
-                        disabled={form.prerequisites.length <= 1}
-                      >
-                        −
-                      </button>
+                      {!viewMode && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-icon"
+                          onClick={() => removeField('prerequisites', i)}
+                          disabled={form.prerequisites.length <= 1}
+                        >
+                          −
+                        </button>
+                      )}
                     </div>
                   ))}
-                  <button
-                    type="button"
-                    className="btn btn-sm"
-                    onClick={() => addField('prerequisites')}
-                  >
-                    + Adicionar
-                  </button>
+                  {!viewMode && (
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => addField('prerequisites')}
+                    >
+                      + Adicionar
+                    </button>
+                  )}
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Resultados Esperados *</label>
+                <label className="form-label">Resultados Esperados {!viewMode && '*'}</label>
                 <div className="dynamic-list">
                   {form.expectations.map((exp, i) => (
                     <div key={i} className="dynamic-item">
@@ -456,34 +560,40 @@ export default function Scenarios() {
                         value={exp}
                         onChange={(e) => updateField('expectations', i, e.target.value)}
                         placeholder={`Resultado ${i + 1}`}
+                        disabled={viewMode}
                       />
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-icon"
-                        onClick={() => removeField('expectations', i)}
-                        disabled={form.expectations.length <= 1}
-                      >
-                        −
-                      </button>
+                      {!viewMode && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-icon"
+                          onClick={() => removeField('expectations', i)}
+                          disabled={form.expectations.length <= 1}
+                        >
+                          −
+                        </button>
+                      )}
                     </div>
                   ))}
-                  <button
-                    type="button"
-                    className="btn btn-sm"
-                    onClick={() => addField('expectations')}
-                  >
-                    + Adicionar
-                  </button>
+                  {!viewMode && (
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={() => addField('expectations')}
+                    >
+                      + Adicionar
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="btn" onClick={closeModal}>Cancelar</button>
-              <button className="btn btn-primary" onClick={handleSave}>
-                {editing ? 'Salvar' : 'Criar'}
-              </button>
-            </div>
+            {!viewMode && (
+              <div className="modal-footer">
+                <button className="btn btn-primary" onClick={handleSave}>
+                  {editing ? 'Salvar' : 'Criar'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

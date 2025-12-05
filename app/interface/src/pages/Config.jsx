@@ -8,11 +8,24 @@ export default function Config() {
   const [statuses, setStatuses] = useState([])
   const [loading, setLoading] = useState(true)
   
-  // Inputs
+  // Inputs de criacao
   const [systemInput, setSystemInput] = useState('')
   const [featureInput, setFeatureInput] = useState('')
   const [featureSystemId, setFeatureSystemId] = useState('')
   const [statusInput, setStatusInput] = useState('')
+
+  // Menu de opcoes
+  const [menuOpen, setMenuOpen] = useState(null)
+  const [menuType, setMenuType] = useState('')
+
+  // Modal de edicao
+  const [modal, setModal] = useState(false)
+  const [viewMode, setViewMode] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [editType, setEditType] = useState('')
+  const [editForm, setEditForm] = useState({ title: '', system_id: '' })
+  const [originalForm, setOriginalForm] = useState(null)
+  const [hasChanges, setHasChanges] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -33,6 +46,109 @@ export default function Config() {
       console.error('Erro ao carregar:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // === MENU DE OPCOES ===
+  const handleCardClick = (e, itemId, type) => {
+    e.stopPropagation()
+    if (menuOpen === itemId && menuType === type) {
+      setMenuOpen(null)
+      setMenuType('')
+    } else {
+      setMenuOpen(itemId)
+      setMenuType(type)
+    }
+  }
+
+  // Fechar menu ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setMenuOpen(null)
+      setMenuType('')
+    }
+    if (menuOpen) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [menuOpen])
+
+  // === MODAL DE EDICAO ===
+  const openView = (item, type) => {
+    setMenuOpen(null)
+    setMenuType('')
+    setEditing(item)
+    setEditType(type)
+    setViewMode(true)
+    setHasChanges(false)
+    const formData = {
+      title: item.title,
+      system_id: item.system_id || ''
+    }
+    setEditForm(formData)
+    setOriginalForm(formData)
+    setModal(true)
+  }
+
+  const openEdit = (item, type) => {
+    setMenuOpen(null)
+    setMenuType('')
+    setEditing(item)
+    setEditType(type)
+    setViewMode(false)
+    setHasChanges(false)
+    const formData = {
+      title: item.title,
+      system_id: item.system_id || ''
+    }
+    setEditForm(formData)
+    setOriginalForm(formData)
+    setModal(true)
+  }
+
+  const closeModal = () => {
+    if (hasChanges && !viewMode) {
+      if (!confirm('Há edições realizadas não salvas. Deseja Cancelar?')) {
+        return
+      }
+    }
+    setModal(false)
+    setEditing(null)
+    setEditType('')
+    setViewMode(false)
+    setHasChanges(false)
+    setOriginalForm(null)
+  }
+
+  const checkChanges = (newForm) => {
+    if (!originalForm) return false
+    return JSON.stringify(newForm) !== JSON.stringify(originalForm)
+  }
+
+  const updateEditForm = (field, value) => {
+    const newForm = { ...editForm, [field]: value }
+    setEditForm(newForm)
+    setHasChanges(checkChanges(newForm))
+  }
+
+  const handleEditSave = async () => {
+    if (!editForm.title.trim()) return
+
+    try {
+      if (editType === 'system') {
+        await systemsAPI.update(editing.id, { title: editForm.title.trim() })
+      } else if (editType === 'feature') {
+        await featuresAPI.update(editing.id, {
+          title: editForm.title.trim(),
+          system_id: parseInt(editForm.system_id)
+        })
+      } else if (editType === 'status') {
+        await statusAPI.update(editing.id, { title: editForm.title.trim() })
+      }
+      closeModal()
+      loadData()
+    } catch (err) {
+      alert(err.message)
     }
   }
 
@@ -175,21 +291,33 @@ export default function Config() {
               ) : (
                 <div className="list">
                   {systems.map(sys => (
-                    <div key={sys.id} className="list-item">
-                      <div className="list-item-content">
-                        <div className="list-item-title">
-                          <span className="tag tag-id">#{sys.id}</span>
-                          {' '}{sys.title}
+                    <div key={sys.id} className="list-item-wrapper">
+                      <div className="list-item" onClick={(e) => handleCardClick(e, sys.id, 'system')}>
+                        <div className="list-item-content">
+                          <div className="list-item-title">
+                            <span className="tag tag-id">#{sys.id}</span>
+                            {' '}{sys.title}
+                          </div>
+                        </div>
+                        <div className="list-item-actions">
+                          <button 
+                            className="btn btn-ghost btn-icon"
+                            onClick={(e) => { e.stopPropagation(); deleteSystem(sys.id) }}
+                          >
+                            ×
+                          </button>
                         </div>
                       </div>
-                      <div className="list-item-actions">
-                        <button 
-                          className="btn btn-ghost btn-icon"
-                          onClick={() => deleteSystem(sys.id)}
-                        >
-                          ×
-                        </button>
-                      </div>
+                      {menuOpen === sys.id && menuType === 'system' && (
+                        <div className="action-menu" onClick={(e) => e.stopPropagation()}>
+                          <button className="action-menu-item" onClick={() => openView(sys, 'system')}>
+                            Visualizar
+                          </button>
+                          <button className="action-menu-item" onClick={() => openEdit(sys, 'system')}>
+                            Editar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -242,24 +370,36 @@ export default function Config() {
               ) : (
                 <div className="list">
                   {features.map(feat => (
-                    <div key={feat.id} className="list-item">
-                      <div className="list-item-content">
-                        <div className="list-item-title">
-                          <span className="tag tag-id">#{feat.id}</span>
-                          {' '}{feat.title}
+                    <div key={feat.id} className="list-item-wrapper">
+                      <div className="list-item" onClick={(e) => handleCardClick(e, feat.id, 'feature')}>
+                        <div className="list-item-content">
+                          <div className="list-item-title">
+                            <span className="tag tag-id">#{feat.id}</span>
+                            {' '}{feat.title}
+                          </div>
+                          <div className="list-item-meta">
+                            <span className="tag tag-system">{feat.system_title}</span>
+                          </div>
                         </div>
-                        <div className="list-item-meta">
-                          <span className="tag tag-system">{feat.system_title}</span>
+                        <div className="list-item-actions">
+                          <button 
+                            className="btn btn-ghost btn-icon"
+                            onClick={(e) => { e.stopPropagation(); deleteFeature(feat.id) }}
+                          >
+                            ×
+                          </button>
                         </div>
                       </div>
-                      <div className="list-item-actions">
-                        <button 
-                          className="btn btn-ghost btn-icon"
-                          onClick={() => deleteFeature(feat.id)}
-                        >
-                          ×
-                        </button>
-                      </div>
+                      {menuOpen === feat.id && menuType === 'feature' && (
+                        <div className="action-menu" onClick={(e) => e.stopPropagation()}>
+                          <button className="action-menu-item" onClick={() => openView(feat, 'feature')}>
+                            Visualizar
+                          </button>
+                          <button className="action-menu-item" onClick={() => openEdit(feat, 'feature')}>
+                            Editar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -300,21 +440,33 @@ export default function Config() {
               ) : (
                 <div className="list">
                   {statuses.map(st => (
-                    <div key={st.id} className="list-item">
-                      <div className="list-item-content">
-                        <div className="list-item-title">
-                          <span className="tag tag-id">#{st.id}</span>
-                          {' '}{st.title}
+                    <div key={st.id} className="list-item-wrapper">
+                      <div className="list-item" onClick={(e) => handleCardClick(e, st.id, 'status')}>
+                        <div className="list-item-content">
+                          <div className="list-item-title">
+                            <span className="tag tag-id">#{st.id}</span>
+                            {' '}{st.title}
+                          </div>
+                        </div>
+                        <div className="list-item-actions">
+                          <button 
+                            className="btn btn-ghost btn-icon"
+                            onClick={(e) => { e.stopPropagation(); deleteStatus(st.id) }}
+                          >
+                            ×
+                          </button>
                         </div>
                       </div>
-                      <div className="list-item-actions">
-                        <button 
-                          className="btn btn-ghost btn-icon"
-                          onClick={() => deleteStatus(st.id)}
-                        >
-                          ×
-                        </button>
-                      </div>
+                      {menuOpen === st.id && menuType === 'status' && (
+                        <div className="action-menu" onClick={(e) => e.stopPropagation()}>
+                          <button className="action-menu-item" onClick={() => openView(st, 'status')}>
+                            Visualizar
+                          </button>
+                          <button className="action-menu-item" onClick={() => openEdit(st, 'status')}>
+                            Editar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -322,6 +474,62 @@ export default function Config() {
             </div>
           )}
         </>
+      )}
+
+      {/* Modal de Edição */}
+      {modal && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">
+                {viewMode ? 'Visualizar' : 'Editar'}{' '}
+                {editType === 'system' && 'Sistema'}
+                {editType === 'feature' && 'Feature'}
+                {editType === 'status' && 'Status'}
+              </h2>
+              <button className="modal-close" onClick={closeModal}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="form-label">Título {!viewMode && '*'}</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={editForm.title}
+                  onChange={(e) => updateEditForm('title', e.target.value)}
+                  placeholder={`Nome ${editType === 'system' ? 'do sistema' : editType === 'feature' ? 'da feature' : 'do status'}`}
+                  disabled={viewMode}
+                />
+              </div>
+
+              {editType === 'feature' && (
+                <div className="form-group">
+                  <label className="form-label">Sistema {!viewMode && '*'}</label>
+                  <select
+                    className="form-input"
+                    value={editForm.system_id}
+                    onChange={(e) => updateEditForm('system_id', e.target.value)}
+                    disabled={viewMode}
+                  >
+                    <option value="">Selecione o sistema</option>
+                    {systems.map(s => (
+                      <option key={s.id} value={s.id}>{s.title}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {!viewMode && (
+              <div className="modal-footer">
+                <button className="btn btn-primary" onClick={handleEditSave}>
+                  Salvar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

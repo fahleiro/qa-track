@@ -549,6 +549,61 @@ body {
   flex-shrink: 0;
 }
 
+/* ===== LIST ITEM WRAPPER (for action menu) ===== */
+.list-item-wrapper {
+  position: relative;
+}
+
+/* ===== ACTION MENU (dropdown) ===== */
+.action-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease;
+}
+
+.action-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.action-menu-item:hover {
+  background: var(--accent-light);
+}
+
+.action-menu-item:not(:last-child) {
+  border-bottom: 1px solid var(--border);
+}
+
+/* ===== DISABLED INPUTS ===== */
+.form-input:disabled {
+  background: var(--accent-light);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn {
   from { opacity: 0; }
