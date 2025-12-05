@@ -1,16 +1,10 @@
 {
-  "name": "qa-test-track-api",
+  "name": "qa-track-api",
   "version": "0.1.0",
-  "description": "Sistema de Gerenciamento de Testes",
+  "description": "QA Track API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "node test/run-all-tests.js",
-    "test:status": "node test/01-config-status.test.js",
-    "test:suite": "node test/02-suite.test.js",
-    "test:scenario": "node test/03-scenario.test.js",
-    "test:run": "node test/04-run.test.js",
-    "test:result": "node test/05-result.test.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
