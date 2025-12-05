@@ -19,7 +19,7 @@ const pgConfig = {
     database: process.env.POSTGRES_DATABASE || 'qa_test_track',
     user: process.env.POSTGRES_USER || 'postgres',
     password: process.env.POSTGRES_PASSWORD || 'postgres',
-    port: process.env.POSTGRES_PORT || 5432
+    port: process.env.P_POSTGRES || 5432
 };
 
 // Middleware

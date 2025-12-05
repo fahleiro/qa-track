@@ -11,6 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Portas configuráveis via variáveis de ambiente
 API_PORT="${P_API:-3000}"
 INTERFACE_PORT="${P_INTERFACE:-5173}"
+POSTGRES_PORT="${P_POSTGRES:-5432}"
 
 echo ""
 echo "[1/3] Configurando Postgres..."
@@ -43,6 +44,7 @@ echo "========================================"
 echo "  QA Track v0.1.0 - Pronto!"
 echo "  API:       http://localhost:$API_PORT"
 echo "  Interface: http://localhost:$INTERFACE_PORT"
+echo "  Postgres:  porta $POSTGRES_PORT"
 echo "========================================"
 
 # Aguarda ambos os processos
