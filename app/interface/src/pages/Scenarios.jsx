@@ -17,6 +17,8 @@ export default function Scenarios() {
   // Modal
   const [modal, setModal] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [originalPrerequisites, setOriginalPrerequisites] = useState([])
+  const [originalExpectations, setOriginalExpectations] = useState([])
   const [form, setForm] = useState({
     title: '',
     feature_id: '',
@@ -75,6 +77,8 @@ export default function Scenarios() {
   // Modal handlers
   const openCreate = () => {
     setEditing(null)
+    setOriginalPrerequisites([])
+    setOriginalExpectations([])
     setForm({
       title: '',
       feature_id: '',
@@ -88,13 +92,19 @@ export default function Scenarios() {
 
   const openEdit = (scenario) => {
     setEditing(scenario)
+    setOriginalPrerequisites(scenario.prerequisites || [])
+    setOriginalExpectations(scenario.expectations || [])
     setForm({
       title: scenario.title,
       feature_id: scenario.feature_id || '',
       status_id: scenario.status_id || '',
       system_ids: scenario.systems?.map(s => s.id) || [],
-      prerequisites: scenario.prerequisites?.map(p => p.description) || [''],
-      expectations: scenario.expectations?.map(e => e.description) || ['']
+      prerequisites: scenario.prerequisites?.length > 0 
+        ? scenario.prerequisites.map(p => p.description) 
+        : [''],
+      expectations: scenario.expectations?.length > 0 
+        ? scenario.expectations.map(e => e.description) 
+        : ['']
     })
     setModal(true)
   }
@@ -102,6 +112,8 @@ export default function Scenarios() {
   const closeModal = () => {
     setModal(false)
     setEditing(null)
+    setOriginalPrerequisites([])
+    setOriginalExpectations([])
   }
 
   const handleSave = async () => {
@@ -117,12 +129,33 @@ export default function Scenarios() {
 
     try {
       if (editing) {
+        // Atualizar dados básicos do cenário
         await scenariosAPI.update(editing.id, {
           title: form.title.trim(),
           feature_id: form.feature_id || null,
           status_id: form.status_id || null,
           system_ids: form.system_ids
         })
+
+        // Atualizar pré-requisitos
+        // Deletar os removidos
+        for (const original of originalPrerequisites) {
+          await scenariosAPI.deletePre(original.id)
+        }
+        // Adicionar os novos
+        for (const pre of prereqs) {
+          await scenariosAPI.addPre(editing.id, pre)
+        }
+
+        // Atualizar resultados esperados
+        // Deletar os removidos
+        for (const original of originalExpectations) {
+          await scenariosAPI.deleteExpect(original.id)
+        }
+        // Adicionar os novos
+        for (const exp of expects) {
+          await scenariosAPI.addExpect(editing.id, exp)
+        }
       } else {
         await scenariosAPI.create({
           title: form.title.trim(),
@@ -367,73 +400,69 @@ export default function Scenarios() {
                 </div>
               </div>
 
-              {!editing && (
-                <>
-                  <div className="form-group">
-                    <label className="form-label">Pré-requisitos *</label>
-                    <div className="dynamic-list">
-                      {form.prerequisites.map((pre, i) => (
-                        <div key={i} className="dynamic-item">
-                          <input
-                            type="text"
-                            className="form-input"
-                            value={pre}
-                            onChange={(e) => updateField('prerequisites', i, e.target.value)}
-                            placeholder={`Pré-requisito ${i + 1}`}
-                          />
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-icon"
-                            onClick={() => removeField('prerequisites', i)}
-                            disabled={form.prerequisites.length <= 1}
-                          >
-                            −
-                          </button>
-                        </div>
-                      ))}
+              <div className="form-group">
+                <label className="form-label">Pré-requisitos *</label>
+                <div className="dynamic-list">
+                  {form.prerequisites.map((pre, i) => (
+                    <div key={i} className="dynamic-item">
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={pre}
+                        onChange={(e) => updateField('prerequisites', i, e.target.value)}
+                        placeholder={`Pré-requisito ${i + 1}`}
+                      />
                       <button
                         type="button"
-                        className="btn btn-sm"
-                        onClick={() => addField('prerequisites')}
+                        className="btn btn-ghost btn-icon"
+                        onClick={() => removeField('prerequisites', i)}
+                        disabled={form.prerequisites.length <= 1}
                       >
-                        + Adicionar
+                        −
                       </button>
                     </div>
-                  </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    onClick={() => addField('prerequisites')}
+                  >
+                    + Adicionar
+                  </button>
+                </div>
+              </div>
 
-                  <div className="form-group">
-                    <label className="form-label">Resultados Esperados *</label>
-                    <div className="dynamic-list">
-                      {form.expectations.map((exp, i) => (
-                        <div key={i} className="dynamic-item">
-                          <input
-                            type="text"
-                            className="form-input"
-                            value={exp}
-                            onChange={(e) => updateField('expectations', i, e.target.value)}
-                            placeholder={`Resultado ${i + 1}`}
-                          />
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-icon"
-                            onClick={() => removeField('expectations', i)}
-                            disabled={form.expectations.length <= 1}
-                          >
-                            −
-                          </button>
-                        </div>
-                      ))}
+              <div className="form-group">
+                <label className="form-label">Resultados Esperados *</label>
+                <div className="dynamic-list">
+                  {form.expectations.map((exp, i) => (
+                    <div key={i} className="dynamic-item">
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={exp}
+                        onChange={(e) => updateField('expectations', i, e.target.value)}
+                        placeholder={`Resultado ${i + 1}`}
+                      />
                       <button
                         type="button"
-                        className="btn btn-sm"
-                        onClick={() => addField('expectations')}
+                        className="btn btn-ghost btn-icon"
+                        onClick={() => removeField('expectations', i)}
+                        disabled={form.expectations.length <= 1}
                       >
-                        + Adicionar
+                        −
                       </button>
                     </div>
-                  </div>
-                </>
-              )}
+                  ))}
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    onClick={() => addField('expectations')}
+                  >
+                    + Adicionar
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="modal-footer">
