@@ -12,6 +12,12 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 3000;
 
+const POSTGRES_HOST = 'localhost';
+const POSTGRES_DATABASE = 'qa_track';
+const POSTGRES_USER = 'postgres';
+const POSTGRES_PASSWORD = 'postgres';
+const POSTGRES_PORT = 5432;
+
 // Middleware
 app.use(cors({
     origin: ['http://localhost:5173', 'http://localhost:3000'],
@@ -20,7 +26,13 @@ app.use(cors({
 app.use(bodyParser.json());
 
 // Conectar ao Postgres
-main 
+const client = new Client({
+    host: POSTGRES_HOST,
+    database: POSTGRES_DATABASE,
+    user: POSTGRES_USER,
+    password: POSTGRES_PASSWORD,
+    port: POSTGRES_PORT
+});
 try {
     await client.connect();
     console.log('Conectado ao Postgres');
