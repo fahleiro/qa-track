@@ -1,6 +1,7 @@
 /**
 * ====================================
 * ROTAS PARA GERENCIAMENTO DE CENÁRIOS
+* v0.1.0
 * ====================================
 */
 
@@ -33,18 +34,40 @@ module.exports = (app, client) => {
         return result.rows;
     };
 
+    // Helper: Buscar status de um cenário
+    const getStatus = async (statusId) => {
+        if (!statusId) return null;
+        const result = await client.query(
+            'SELECT * FROM t_scenario_status WHERE id = $1',
+            [statusId]
+        );
+        return result.rows[0] || null;
+    };
+
+    // Helper: Buscar feature de um cenário
+    const getFeature = async (featureId) => {
+        if (!featureId) return null;
+        const result = await client.query(
+            'SELECT * FROM t_feature WHERE id = $1',
+            [featureId]
+        );
+        return result.rows[0] || null;
+    };
+
     // GET: Listar todos os cenários com sistemas, pré-requisitos e resultados esperados
     app.get('/api/scenario', async (req, res) => {
         try {
             const result = await client.query('SELECT * FROM t_scenario ORDER BY id DESC');
             
             const scenarios = await Promise.all(result.rows.map(async (scenario) => {
-                const [systems, prerequisites, expectations] = await Promise.all([
+                const [systems, prerequisites, expectations, status, feature] = await Promise.all([
                     getSystems(scenario.id),
                     getPrerequisites(scenario.id),
-                    getExpectations(scenario.id)
+                    getExpectations(scenario.id),
+                    getStatus(scenario.status_id),
+                    getFeature(scenario.feature_id)
                 ]);
-                return { ...scenario, systems, prerequisites, expectations };
+                return { ...scenario, systems, prerequisites, expectations, status, feature };
             }));
             
             res.json(scenarios);
@@ -61,17 +84,22 @@ module.exports = (app, client) => {
                 return res.status(404).json({ error: 'Cenário não encontrado' });
             }
 
-            const [systems, prerequisites, expectations] = await Promise.all([
+            const scenario = result.rows[0];
+            const [systems, prerequisites, expectations, status, feature] = await Promise.all([
                 getSystems(req.params.id),
                 getPrerequisites(req.params.id),
-                getExpectations(req.params.id)
+                getExpectations(req.params.id),
+                getStatus(scenario.status_id),
+                getFeature(scenario.feature_id)
             ]);
 
             res.json({
-                ...result.rows[0],
+                ...scenario,
                 systems,
                 prerequisites,
-                expectations
+                expectations,
+                status,
+                feature
             });
         } catch (err) {
             res.status(500).json({ error: err.message });
@@ -80,7 +108,7 @@ module.exports = (app, client) => {
 
     // POST: Criar novo cenário
     app.post('/api/scenario', async (req, res) => {
-        const { title, suite_id, system_ids, prerequisites, expectations } = req.body;
+        const { title, feature_id, status_id, system_ids, prerequisites, expectations } = req.body;
         
         if (!title) {
             return res.status(400).json({ error: 'Título do cenário não pode ser vazio' });
@@ -94,8 +122,8 @@ module.exports = (app, client) => {
 
         try {
             const result = await client.query(
-                'INSERT INTO t_scenario (title, suite_id) VALUES ($1, $2) RETURNING *',
-                [title, suite_id || null]
+                'INSERT INTO t_scenario (title, feature_id, status_id) VALUES ($1, $2, $3) RETURNING *',
+                [title, feature_id || null, status_id || null]
             );
             
             const scenario = result.rows[0];
@@ -131,39 +159,52 @@ module.exports = (app, client) => {
             }
 
             // Buscar dados relacionados para retorno
-            const [systems, prereqs, exps] = await Promise.all([
+            const [systems, prereqs, exps, status, feature] = await Promise.all([
                 getSystems(scenario.id),
                 getPrerequisites(scenario.id),
-                getExpectations(scenario.id)
+                getExpectations(scenario.id),
+                getStatus(scenario.status_id),
+                getFeature(scenario.feature_id)
             ]);
 
             res.status(201).json({ 
                 ...scenario, 
                 systems, 
                 prerequisites: prereqs, 
-                expectations: exps 
+                expectations: exps,
+                status,
+                feature
             });
         } catch (err) {
+            if (err.code === '23505') {
+                return res.status(409).json({ error: 'Cenário com esse título já existe' });
+            }
+            if (err.code === '23503') {
+                return res.status(404).json({ error: 'Feature ou Status não encontrado' });
+            }
             res.status(500).json({ error: err.message });
         }
     });
 
     // PATCH: Atualizar parcialmente um cenário
     app.patch('/api/scenario/:id', async (req, res) => {
-        const { title, suite_id, system_ids } = req.body;
+        const { title, feature_id, status_id, system_ids } = req.body;
         const { id } = req.params;
         
         try {
             const result = await client.query(
                 `UPDATE t_scenario 
                 SET title = COALESCE($1, title),
-                    suite_id = COALESCE($2, suite_id)
-                WHERE id = $3 RETURNING *`,
-                [title, suite_id, id]
+                    feature_id = COALESCE($2, feature_id),
+                    status_id = COALESCE($3, status_id)
+                WHERE id = $4 RETURNING *`,
+                [title, feature_id, status_id, id]
             );
             if (result.rows.length === 0) {
                 return res.status(404).json({ error: 'Cenário não encontrado' });
             }
+
+            const scenario = result.rows[0];
 
             // Atualizar sistemas se fornecidos
             if (system_ids !== undefined && Array.isArray(system_ids)) {
@@ -178,21 +219,28 @@ module.exports = (app, client) => {
             }
 
             // Buscar dados relacionados para retorno
-            const [systems, prerequisites, expectations] = await Promise.all([
+            const [systems, prerequisites, expectations, status, feature] = await Promise.all([
                 getSystems(id),
                 getPrerequisites(id),
-                getExpectations(id)
+                getExpectations(id),
+                getStatus(scenario.status_id),
+                getFeature(scenario.feature_id)
             ]);
 
             res.json({ 
-                ...result.rows[0], 
+                ...scenario, 
                 systems, 
                 prerequisites, 
-                expectations 
+                expectations,
+                status,
+                feature
             });
         } catch (err) {
             if (err.code === '23505') {
                 return res.status(409).json({ error: 'Cenário com esse título já existe' });
+            }
+            if (err.code === '23503') {
+                return res.status(404).json({ error: 'Feature ou Status não encontrado' });
             }
             res.status(500).json({ error: err.message });
         }
@@ -201,7 +249,10 @@ module.exports = (app, client) => {
     // DELETE: Remover cenário
     app.delete('/api/scenario/:id', async (req, res) => {
         try {
-            await client.query('DELETE FROM t_scenario WHERE id = $1', [req.params.id]);
+            const result = await client.query('DELETE FROM t_scenario WHERE id = $1 RETURNING id', [req.params.id]);
+            if (result.rows.length === 0) {
+                return res.status(404).json({ error: 'Cenário não encontrado' });
+            }
             res.status(204).send();
         } catch (err) {
             res.status(500).json({ error: err.message });

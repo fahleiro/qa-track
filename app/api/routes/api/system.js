@@ -1,6 +1,7 @@
 /**
 * ====================================
 * ROTAS PARA GERENCIAMENTO DE SISTEMAS
+* v0.1.0
 * ====================================
 */
 
@@ -15,7 +16,7 @@ module.exports = (app, client) => {
         }
     });
 
-    // GET: Listar um sistema específico com cenários relacionados
+    // GET: Listar um sistema específico com funcionalidades e cenários relacionados
     app.get('/api/system/:id', async (req, res) => {
         try {
             const systemResult = await client.query('SELECT * FROM t_system WHERE id = $1', [req.params.id]);
@@ -23,7 +24,13 @@ module.exports = (app, client) => {
                 return res.status(404).json({ error: 'Sistema não encontrado' });
             }
 
-            // Buscar cenários relacionados
+            // Buscar funcionalidades do sistema
+            const featuresResult = await client.query(
+                'SELECT * FROM t_feature WHERE system_id = $1 ORDER BY id DESC',
+                [req.params.id]
+            );
+
+            // Buscar cenários relacionados via t_scenario_system
             const scenariosResult = await client.query(`
                 SELECT s.* FROM t_scenario s
                 INNER JOIN t_scenario_system ss ON s.id = ss.scenario_id
@@ -46,6 +53,7 @@ module.exports = (app, client) => {
 
             res.json({
                 ...systemResult.rows[0],
+                features: featuresResult.rows,
                 scenarios: scenariosWithDetails
             });
         } catch (err) {
@@ -55,20 +63,20 @@ module.exports = (app, client) => {
 
     // POST: Criar novo sistema
     app.post('/api/system', async (req, res) => {
-        const { description } = req.body;
-        if (!description) {
-            return res.status(400).json({ error: 'Descrição do sistema não pode ser vazia' });
+        const { title } = req.body;
+        if (!title) {
+            return res.status(400).json({ error: 'Título do sistema não pode ser vazio' });
         }
 
         try {
             const result = await client.query(
-                'INSERT INTO t_system (description) VALUES ($1) RETURNING *',
-                [description]
+                'INSERT INTO t_system (title) VALUES ($1) RETURNING *',
+                [title]
             );
             res.status(201).json(result.rows[0]);
         } catch (err) {
             if (err.code === '23505') {
-                return res.status(409).json({ error: 'Sistema com essa descrição já existe' });
+                return res.status(409).json({ error: 'Sistema com esse título já existe' });
             }
             res.status(500).json({ error: err.message });
         }
@@ -76,15 +84,15 @@ module.exports = (app, client) => {
 
     // PATCH: Atualizar um sistema
     app.patch('/api/system/:id', async (req, res) => {
-        const { description } = req.body;
+        const { title } = req.body;
         const { id } = req.params;
         
         try {
             const result = await client.query(
                 `UPDATE t_system 
-                SET description = COALESCE($1, description)
+                SET title = COALESCE($1, title)
                 WHERE id = $2 RETURNING *`,
-                [description, id]
+                [title, id]
             );
             if (result.rows.length === 0) {
                 return res.status(404).json({ error: 'Sistema não encontrado' });
@@ -92,7 +100,7 @@ module.exports = (app, client) => {
             res.json(result.rows[0]);
         } catch (err) {
             if (err.code === '23505') {
-                return res.status(409).json({ error: 'Sistema com essa descrição já existe' });
+                return res.status(409).json({ error: 'Sistema com esse título já existe' });
             }
             res.status(500).json({ error: err.message });
         }
@@ -101,7 +109,10 @@ module.exports = (app, client) => {
     // DELETE: Remover sistema
     app.delete('/api/system/:id', async (req, res) => {
         try {
-            await client.query('DELETE FROM t_system WHERE id = $1', [req.params.id]);
+            const result = await client.query('DELETE FROM t_system WHERE id = $1 RETURNING id', [req.params.id]);
+            if (result.rows.length === 0) {
+                return res.status(404).json({ error: 'Sistema não encontrado' });
+            }
             res.status(204).send();
         } catch (err) {
             res.status(500).json({ error: err.message });
@@ -139,14 +150,16 @@ module.exports = (app, client) => {
         const { id, scenarioId } = req.params;
 
         try {
-            await client.query(
-                'DELETE FROM t_scenario_system WHERE system_id = $1 AND scenario_id = $2',
+            const result = await client.query(
+                'DELETE FROM t_scenario_system WHERE system_id = $1 AND scenario_id = $2 RETURNING system_id',
                 [id, scenarioId]
             );
+            if (result.rows.length === 0) {
+                return res.status(404).json({ error: 'Vínculo não encontrado' });
+            }
             res.status(204).send();
         } catch (err) {
             res.status(500).json({ error: err.message });
         }
     });
 };
-
