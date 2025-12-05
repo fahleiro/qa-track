@@ -42,8 +42,12 @@ RUN dos2unix sh_scripts/*.sh
 # Permissões de execução para os scripts
 RUN chmod +x sh_scripts/*.sh
 
+# Variáveis de ambiente para portas (configuráveis via CLI)
+ENV P_API=3000
+ENV P_INTERFACE=5173
+
 # Expõe portas
-EXPOSE 3000 5173
+EXPOSE ${P_API} ${P_INTERFACE}
 
 # Comando de entrada
 CMD ["./sh_scripts/start.sh"]

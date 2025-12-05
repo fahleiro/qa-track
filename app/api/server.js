@@ -11,6 +11,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const interfacePort = process.env.P_INTERFACE || 5173;
 
 // Configuração do Postgres
 const pgConfig = {
@@ -23,7 +24,7 @@ const pgConfig = {
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: [`http://localhost:${interfacePort}`, `http://localhost:${port}`],
     credentials: true
 }));
 app.use(bodyParser.json());
