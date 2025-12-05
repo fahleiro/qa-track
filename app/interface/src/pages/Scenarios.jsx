@@ -308,16 +308,29 @@ export default function Scenarios() {
                     <span className="tag tag-id">#{scenario.id}</span>
                     {' '}{scenario.title}
                   </div>
-                  <div className="list-item-meta">
+                  <div className="list-item-details">
                     {scenario.status && (
-                      <span className="tag tag-status">{scenario.status.title}</span>
+                      <div className="detail-row">
+                        <span className="detail-label">Status:</span>
+                        <span className="tag tag-status">{scenario.status.title}</span>
+                      </div>
                     )}
                     {scenario.feature && (
-                      <span className="tag tag-feature">{scenario.feature.title}</span>
+                      <div className="detail-row">
+                        <span className="detail-label">Feature:</span>
+                        <span className="tag tag-feature">{scenario.feature.title}</span>
+                      </div>
                     )}
-                    {scenario.systems?.map(sys => (
-                      <span key={sys.id} className="tag tag-system">{sys.title}</span>
-                    ))}
+                    {scenario.systems?.length > 0 && (
+                      <div className="detail-row">
+                        <span className="detail-label">Sistemas:</span>
+                        <div className="detail-tags">
+                          {scenario.systems.map(sys => (
+                            <span key={sys.id} className="tag tag-system">{sys.title}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="list-item-actions">

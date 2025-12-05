@@ -269,6 +269,33 @@ body {
   margin-left: 12px;
 }
 
+/* ===== CARD DETAILS ===== */
+.list-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.detail-label {
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.detail-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
 /* ===== TAGS ===== */
 .tag {
   display: inline-flex;
