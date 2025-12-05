@@ -1,7 +1,11 @@
-# Usa uma imagem base Debian (bullseye) que facilita instalar o Postgres oficial
+# ========================================
+# QA Track v0.1.0 - Dockerfile
+# ========================================
+
+# Imagem base com Node.js e Debian
 FROM node:18-bullseye-slim
 
-# Instala Postgres, dos2unix e dependências necessárias
+# Instala Postgres 13 e utilitários
 RUN apt-get update && apt-get install -y \
     postgresql-13 \
     postgresql-client-13 \
@@ -11,35 +15,35 @@ RUN apt-get update && apt-get install -y \
 # Define diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos de dependência e instala pacotes npm
+# Copia package.json primeiro (para cache de dependências)
 COPY api/package.json ./api/
 COPY interface/package.json ./interface/
 
-# Instala dependências da api
+# Instala dependências da API
 WORKDIR /app/api
 RUN npm install
 
-# Instala dependências da interface
+# Instala dependências da Interface
 WORKDIR /app/interface
 RUN npm install
 
 # Volta para o diretório raiz
 WORKDIR /app
 
-# Copia todo o código-fonte do projeto
+# Copia todo o código-fonte
 COPY api/ ./api/
 COPY interface/ ./interface/
 COPY db/ ./db/
 COPY sh_scripts/ ./sh_scripts/
 
-# Converte line endings dos scripts de Windows (CRLF) para Unix (LF)
+# Converte line endings CRLF → LF (Windows → Unix)
 RUN dos2unix sh_scripts/*.sh
 
-# Dá permissão de execução para os scripts
+# Permissões de execução para os scripts
 RUN chmod +x sh_scripts/*.sh
 
-# Expõe as portas (3000 para api, 5173 para interface)
+# Expõe portas
 EXPOSE 3000 5173
 
-# Define o comando de entrada
+# Comando de entrada
 CMD ["./sh_scripts/start.sh"]

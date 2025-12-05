@@ -1,14 +1,26 @@
+# Dependências
 node_modules
+**/node_modules
+
+# Logs
 npm-debug.log
+*.log
+
+# Git
 .git
 .gitignore
-README.md
-.env
-.DS_Store
-public
-api/node_modules
-api/package-lock.json
-painel/node_modules
-painel/package-lock.json
-painel/dist
 
+# Ambiente local
+.env
+.env.local
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Build
+interface/dist
+
+# Lock files (reinstalar no container)
+package-lock.json
+**/package-lock.json
