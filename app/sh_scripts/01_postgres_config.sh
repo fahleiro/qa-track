@@ -7,7 +7,7 @@ if [ ! -d "/var/lib/postgresql/data/base" ]; then
     # Inicializa o banco
     su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/data"
     
-    # Configura para aceitar conexões locais sem senha (trust) para simplificar MVP
+    # Configura para aceitar conexões locais sem senha (trust)
     echo "host all  all    0.0.0.0/0  trust" >> /var/lib/postgresql/data/pg_hba.conf
     echo "listen_addresses='*'" >> /var/lib/postgresql/data/postgresql.conf
 fi
