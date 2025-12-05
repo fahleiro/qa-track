@@ -21,7 +21,3 @@ Thumbs.db
 
 # Build
 interface/dist
-
-# Lock files (reinstalar no container)
-package-lock.json
-**/package-lock.json
