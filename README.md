@@ -1,6 +1,5 @@
-# QA Test Track
-
-Sistema de Gerenciamento de Testes com Backend Node.js/Express e Frontend React.
+# QA Track
+_Gerenciamento de Qualidade de Software_
 
 ## 🏗️ Arquitetura
 

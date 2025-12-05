@@ -1,36 +1,47 @@
+-- Tabela de Sistemas
+CREATE TABLE IF NOT EXISTS t_system (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL UNIQUE
+);
+
+-- Tabela de Funcionalidades
+CREATE TABLE IF NOT EXISTS t_feature (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL UNIQUE,    
+    system_id INTEGER REFERENCES t_system(id) NOT NULL
+);
+
 -- Tabela de Status de Cenários
 CREATE TABLE IF NOT EXISTS t_scenario_status (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
-    is_default BOOLEAN DEFAULT FALSE
+    title TEXT NOT NULL UNIQUE
 );
 
 -- Tabela de Cenários
 CREATE TABLE IF NOT EXISTS t_scenario (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL UNIQUE,
-    suite_id INTEGER REFERENCES t_suite(id) ON DELETE SET NULL,
-    status_id INTEGER REFERENCES t_scenario_status(id) ON DELETE SET NULL
+    status_id INTEGER REFERENCES t_scenario_status(id),
+    feature_id INTEGER REFERENCES t_feature(id)
 );
 
 -- Tabela de Relacionamento Cenário-Sistema (N:N)
 CREATE TABLE IF NOT EXISTS t_scenario_system (
-    scenario_id INTEGER REFERENCES t_scenario(id) ON DELETE CASCADE,
-    system_id INTEGER REFERENCES t_system(id) ON DELETE CASCADE,
+    scenario_id INTEGER REFERENCES t_scenario(id),
+    system_id INTEGER REFERENCES t_system(id),
     PRIMARY KEY(scenario_id, system_id)
 );
 
 -- Tabela de Pré-requisitos de Cenários
 CREATE TABLE IF NOT EXISTS t_scenario_pre (
     id SERIAL PRIMARY KEY,
-    scenario_id INTEGER NOT NULL REFERENCES t_scenario(id) ON DELETE CASCADE,
+    scenario_id INTEGER NOT NULL REFERENCES t_scenario(id),
     description TEXT NOT NULL
 );
 
 -- Tabela de Resultados Esperados de Cenários
 CREATE TABLE IF NOT EXISTS t_scenario_expect (
     id SERIAL PRIMARY KEY,
-    scenario_id INTEGER NOT NULL REFERENCES t_scenario(id) ON DELETE CASCADE,
+    scenario_id INTEGER NOT NULL REFERENCES t_scenario(id),
     description TEXT NOT NULL
 );
