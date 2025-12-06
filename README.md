@@ -35,5 +35,5 @@ You can override the default ports by passing environment variables when running
 
 ```bash
 # Example with custom ports 
-docker run  -p 3001:3001  -p 5174:5174  -p 5433:5433  -e P_API=3001  -e P_INTERFACE=5174  -e P_POSTGRES=5433   qa-track
+docker run  -p 3001:3001  -p 5174:5174  -p 5433:5433  -e P_API=3001  -e P_INTERFACE=5174  -e P_POSTGRES=5433  qa-track
 ```
