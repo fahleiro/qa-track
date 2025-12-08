@@ -100,6 +100,11 @@ body {
   letter-spacing: -0.3px;
 }
 
+.page-actions {
+  display: flex;
+  gap: 8px;
+}
+
 /* ===== SEARCH & FILTERS ===== */
 .search-bar {
   display: flex;
@@ -180,6 +185,17 @@ body {
 
 .btn-primary:hover {
   background: #262626;
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
 }
 
 .btn-ghost {
@@ -470,6 +486,47 @@ body {
   gap: 8px;
   padding: 16px 20px;
   border-top: 1px solid var(--border);
+}
+
+/* ===== IMPORT STATUS ===== */
+.import-status {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--accent-light);
+  font-size: 13px;
+}
+
+.import-status p {
+  margin: 4px 0;
+}
+
+.import-error {
+  background: #fef2f2;
+  color: var(--danger);
+  border: 1px solid #fecaca;
+}
+
+.import-success {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.import-details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.import-details ul {
+  margin: 8px 0 0 20px;
+  padding: 0;
+}
+
+.import-details li {
+  font-size: 12px;
+  margin: 2px 0;
 }
 
 /* ===== EMPTY STATE ===== */

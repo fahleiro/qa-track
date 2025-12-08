@@ -127,3 +127,19 @@ export const scenariosAPI = {
         method: 'DELETE',
     }),
 };
+
+// --- CONFIGURAÇÃO (EXPORT/IMPORT) ---
+export const configAPI = {
+    export: async () => {
+        const response = await fetch(`${API_BASE_URL}/config/export`);
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+            throw new Error(error.error || `HTTP ${response.status}`);
+        }
+        return response.blob();
+    },
+    import: async (jsonData) => request('/config/import', {
+        method: 'POST',
+        body: JSON.stringify(jsonData),
+    }),
+};

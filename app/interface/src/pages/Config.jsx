@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { systemsAPI, featuresAPI, statusAPI } from '../services/api'
+import { useState, useEffect, useRef } from 'react'
+import { systemsAPI, featuresAPI, statusAPI, configAPI } from '../services/api'
 
 export default function Config() {
   const [tab, setTab] = useState('systems')
@@ -26,6 +26,13 @@ export default function Config() {
   const [editForm, setEditForm] = useState({ title: '', system_id: '' })
   const [originalForm, setOriginalForm] = useState(null)
   const [hasChanges, setHasChanges] = useState(false)
+
+  // Modal de importacao
+  const [importModal, setImportModal] = useState(false)
+  const [importLoading, setImportLoading] = useState(false)
+  const [importResult, setImportResult] = useState(null)
+  const [importError, setImportError] = useState(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     loadData()
@@ -223,11 +230,93 @@ export default function Config() {
     if (e.key === 'Enter') action()
   }
 
+  // === EXPORT/IMPORT ===
+  const handleExport = async () => {
+    try {
+      const blob = await configAPI.export()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `qa-track-config-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (err) {
+      alert('Erro ao exportar: ' + err.message)
+    }
+  }
+
+  const openImportModal = () => {
+    setImportModal(true)
+    setImportResult(null)
+    setImportError(null)
+  }
+
+  const closeImportModal = () => {
+    setImportModal(false)
+    setImportResult(null)
+    setImportError(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Validar tipo de arquivo
+    if (!file.name.endsWith('.json')) {
+      setImportError('Apenas arquivos .json são permitidos')
+      return
+    }
+
+    // Validar tamanho (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setImportError('Arquivo muito grande. Máximo permitido: 10MB')
+      return
+    }
+
+    setImportLoading(true)
+    setImportError(null)
+    setImportResult(null)
+
+    try {
+      const text = await file.text()
+      let jsonData
+      
+      try {
+        jsonData = JSON.parse(text)
+      } catch {
+        setImportError('Arquivo JSON inválido')
+        setImportLoading(false)
+        return
+      }
+
+      const result = await configAPI.import(jsonData)
+      setImportResult(result)
+      loadData() // Recarregar dados após importação
+    } catch (err) {
+      setImportError(err.message)
+    } finally {
+      setImportLoading(false)
+    }
+  }
+
   return (
     <div>
       {/* Header */}
       <div className="page-header">
         <h1 className="page-title">Configuração</h1>
+        <div className="page-actions">
+          <button className="btn btn-secondary" onClick={handleExport}>
+            Exportar Config
+          </button>
+          <button className="btn btn-secondary" onClick={openImportModal}>
+            Importar Config
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -528,6 +617,70 @@ export default function Config() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Importação */}
+      {importModal && (
+        <div className="modal-overlay" onClick={closeImportModal}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Importar Configuração</h2>
+              <button className="modal-close" onClick={closeImportModal}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="form-group">
+                <label className="form-label">Arquivo JSON</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  className="form-input"
+                  onChange={handleFileSelect}
+                  disabled={importLoading}
+                />
+                <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>
+                  Selecione um arquivo JSON exportado anteriormente.
+                </small>
+              </div>
+
+              {importLoading && (
+                <div className="import-status">
+                  <div className="empty-text">Importando...</div>
+                </div>
+              )}
+
+              {importError && (
+                <div className="import-status import-error">
+                  <strong>Erro:</strong> {importError}
+                </div>
+              )}
+
+              {importResult && importResult.success && (
+                <div className="import-status import-success">
+                  <strong>Sucesso!</strong>
+                  <p>{importResult.message}</p>
+                  {importResult.inserted && (
+                    <div className="import-details">
+                      <strong>Registros inseridos:</strong>
+                      <ul>
+                        {Object.entries(importResult.inserted).map(([table, count]) => (
+                          <li key={table}>{table}: {count}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={closeImportModal}>
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}
