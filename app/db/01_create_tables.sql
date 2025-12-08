@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS t_scenario (
 
 -- Tabela de Relacionamento Cenário-Sistema (N:N)
 CREATE TABLE IF NOT EXISTS t_scenario_system (
-    scenario_id INTEGER REFERENCES t_scenario(id),
+    scenario_id INTEGER REFERENCES t_scenario(id) ON DELETE CASCADE,
     system_id INTEGER REFERENCES t_system(id),
     PRIMARY KEY(scenario_id, system_id)
 );
@@ -35,13 +35,13 @@ CREATE TABLE IF NOT EXISTS t_scenario_system (
 -- Tabela de Pré-requisitos de Cenários
 CREATE TABLE IF NOT EXISTS t_scenario_pre (
     id SERIAL PRIMARY KEY,
-    scenario_id INTEGER NOT NULL REFERENCES t_scenario(id),
+    scenario_id INTEGER NOT NULL REFERENCES t_scenario(id) ON DELETE CASCADE,
     description TEXT NOT NULL
 );
 
 -- Tabela de Resultados Esperados de Cenários
 CREATE TABLE IF NOT EXISTS t_scenario_expect (
     id SERIAL PRIMARY KEY,
-    scenario_id INTEGER NOT NULL REFERENCES t_scenario(id),
+    scenario_id INTEGER NOT NULL REFERENCES t_scenario(id) ON DELETE CASCADE,
     description TEXT NOT NULL
 );
