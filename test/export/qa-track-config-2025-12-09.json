@@ -1,260 +1,320 @@
 {
-    "version": "0.1.0",
-    "exportedAt": "2025-12-09T12:58:44.428Z",
-    "t_system": [
-      {
-        "id": 1,
-        "title": "qa-track"
-      }
-    ],
-    "t_feature": [
-      {
-        "id": 2,
-        "title": "Config",
-        "system_id": 1
-      },
-      {
-        "id": 3,
-        "title": "Scenarios",
-        "system_id": 1
-      }
-    ],
-    "t_scenario_status": [
-      {
-        "id": 1,
-        "title": "Active"
-      },
-      {
-        "id": 2,
-        "title": "Deprecated"
-      }
-    ],
-    "t_scenario": [
-      {
-        "id": 1,
-        "title": "Create new System",
-        "status_id": 1,
-        "feature_id": 2
-      },
-      {
-        "id": 2,
-        "title": "Create new Feature",
-        "status_id": 1,
-        "feature_id": 2
-      },
-      {
-        "id": 3,
-        "title": "Validate t_system schema",
-        "status_id": 1,
-        "feature_id": 2
-      },
-      {
-        "id": 5,
-        "title": "Validate t_feature schema",
-        "status_id": 1,
-        "feature_id": 2
-      },
-      {
-        "id": 6,
-        "title": "Validate t_scenario_status schema",
-        "status_id": 1,
-        "feature_id": 2
-      },
-      {
-        "id": 7,
-        "title": "Validate t_scenario_system schema",
-        "status_id": 1,
-        "feature_id": 3
-      },
-      {
-        "id": 8,
-        "title": "Validate t_scenario schema",
-        "status_id": 1,
-        "feature_id": 3
-      }
-    ],
-    "t_scenario_system": [
-      {
-        "scenario_id": 1,
-        "system_id": 1
-      },
-      {
-        "scenario_id": 2,
-        "system_id": 1
-      },
-      {
-        "scenario_id": 3,
-        "system_id": 1
-      },
-      {
-        "scenario_id": 5,
-        "system_id": 1
-      },
-      {
-        "scenario_id": 6,
-        "system_id": 1
-      },
-      {
-        "scenario_id": 7,
-        "system_id": 1
-      },
-      {
-        "scenario_id": 8,
-        "system_id": 1
-      }
-    ],
-    "t_scenario_pre": [
-      {
-        "id": 9,
-        "scenario_id": 1,
-        "description": "Table t_system created in database"
-      },
-      {
-        "id": 10,
-        "scenario_id": 1,
-        "description": "Column t_system.id must be SERIAL PK"
-      },
-      {
-        "id": 11,
-        "scenario_id": 1,
-        "description": "Column t_system.tile must be TEXT NOT NULL UNIQUE"
-      },
-      {
-        "id": 12,
-        "scenario_id": 1,
-        "description": "POST api endpoint /api/system with body requisition \"title\""
-      },
-      {
-        "id": 13,
-        "scenario_id": 2,
-        "description": "Table t_feature created in database"
-      },
-      {
-        "id": 14,
-        "scenario_id": 2,
-        "description": "Column t_feature.id must be SERIAL PK"
-      },
-      {
-        "id": 15,
-        "scenario_id": 2,
-        "description": "Column t_feature.title must be TEXT NOT NULL UNIQUE"
-      },
-      {
-        "id": 16,
-        "scenario_id": 2,
-        "description": "Column t_system_id must be INTEGER REFERENCE t_system.id NOT NULL"
-      },
-      {
-        "id": 17,
-        "scenario_id": 2,
-        "description": "POST api endpoint /api/feature with body requisition \"title\" & \"system_id\""
-      },
-      {
-        "id": 18,
-        "scenario_id": 3,
-        "description": "Table 't_system' must exist"
-      },
-      {
-        "id": 19,
-        "scenario_id": 5,
-        "description": "Table 't_feature' must exists"
-      },
-      {
-        "id": 20,
-        "scenario_id": 6,
-        "description": "Table 't_scenario_status' must exists"
-      },
-      {
-        "id": 22,
-        "scenario_id": 7,
-        "description": "Table 't_scenario_system' must exists"
-      },
-      {
-        "id": 23,
-        "scenario_id": 8,
-        "description": "Table 't_scenario' must exists"
-      }
-    ],
-    "t_scenario_expect": [
-      {
-        "id": 4,
-        "scenario_id": 1,
-        "description": "New line in t_system.id = new id | t_system.title = \"title\" from body POST req"
-      },
-      {
-        "id": 5,
-        "scenario_id": 2,
-        "description": "New line in t_feature.id = new id & t_feature.title = \"title\" from body POST req & t_feature.system_id \"system_id\" from body POST req"
-      },
-      {
-        "id": 6,
-        "scenario_id": 3,
-        "description": "Column 'id' must be SERIAL PRIMARY KEY"
-      },
-      {
-        "id": 7,
-        "scenario_id": 3,
-        "description": "Column 'title' must be TEXT NOT NULL UNIQUE"
-      },
-      {
-        "id": 8,
-        "scenario_id": 5,
-        "description": "Column 'id' must be SERIAL PRIMARY KEY"
-      },
-      {
-        "id": 9,
-        "scenario_id": 5,
-        "description": "Column 'title' must be TEXT NOT NULL UNIQUE"
-      },
-      {
-        "id": 10,
-        "scenario_id": 5,
-        "description": "Column 'system_id' must be INTEGER REFERENCES t_system(id) NOT NULL"
-      },
-      {
-        "id": 11,
-        "scenario_id": 6,
-        "description": "Column 'id' must be SERIAL PRIMARY KEY"
-      },
-      {
-        "id": 12,
-        "scenario_id": 6,
-        "description": "Column 'title' must be TEXT NOT NULL UNIQUE"
-      },
-      {
-        "id": 16,
-        "scenario_id": 7,
-        "description": "Column 'scenario_id' must be INTEGER REFERENCES t_scenario(id) ON DELETE CASCADE"
-      },
-      {
-        "id": 17,
-        "scenario_id": 7,
-        "description": "Column 'system_id' must be INTEGER REFERENCES t_system(id)"
-      },
-      {
-        "id": 18,
-        "scenario_id": 7,
-        "description": "Composed PRIMARY KEY(scenario_id, system_id)"
-      },
-      {
-        "id": 19,
-        "scenario_id": 8,
-        "description": "Column 'id' must be SERIAL PRIMARY KEY"
-      },
-      {
-        "id": 20,
-        "scenario_id": 8,
-        "description": "Column 'title' must be TEXT NOT NULL UNIQUE"
-      },
-      {
-        "id": 21,
-        "scenario_id": 8,
-        "description": "Column 'status_id' must be INTEGER REFERENCES t_scenario_status(id)"
-      },
-      {
-        "id": 22,
-        "scenario_id": 8,
-        "description": "Column 'feature_id' must be INTEGER REFERENCES t_feature(id)"
-      }
-    ]
-  }
+  "version": "0.1.0",
+  "exportedAt": "2025-12-10T14:02:43.290Z",
+  "t_system": [
+    {
+      "id": 1,
+      "title": "qa-track"
+    }
+  ],
+  "t_feature": [
+    {
+      "id": 2,
+      "title": "Config",
+      "system_id": 1
+    },
+    {
+      "id": 3,
+      "title": "Scenarios",
+      "system_id": 1
+    }
+  ],
+  "t_scenario_status": [
+    {
+      "id": 1,
+      "title": "Ativo"
+    },
+    {
+      "id": 2,
+      "title": "Obsoleto"
+    }
+  ],
+  "t_scenario": [
+    {
+      "id": 1,
+      "title": "Create new System",
+      "status_id": 1,
+      "feature_id": 2
+    },
+    {
+      "id": 2,
+      "title": "Create new Feature",
+      "status_id": 1,
+      "feature_id": 2
+    },
+    {
+      "id": 3,
+      "title": "Validate t_system schema",
+      "status_id": 1,
+      "feature_id": 2
+    },
+    {
+      "id": 5,
+      "title": "Validate t_feature schema",
+      "status_id": 1,
+      "feature_id": 2
+    },
+    {
+      "id": 6,
+      "title": "Validate t_scenario_status schema",
+      "status_id": 1,
+      "feature_id": 2
+    },
+    {
+      "id": 7,
+      "title": "Validate t_scenario_system schema",
+      "status_id": 1,
+      "feature_id": 3
+    },
+    {
+      "id": 8,
+      "title": "Validate t_scenario schema",
+      "status_id": 1,
+      "feature_id": 3
+    },
+    {
+      "id": 9,
+      "title": "Validate t_scenario_pre schema",
+      "status_id": 1,
+      "feature_id": 3
+    },
+    {
+      "id": 10,
+      "title": "Validate t_scenario_expect schema",
+      "status_id": 1,
+      "feature_id": 3
+    }
+  ],
+  "t_scenario_system": [
+    {
+      "scenario_id": 1,
+      "system_id": 1
+    },
+    {
+      "scenario_id": 2,
+      "system_id": 1
+    },
+    {
+      "scenario_id": 3,
+      "system_id": 1
+    },
+    {
+      "scenario_id": 5,
+      "system_id": 1
+    },
+    {
+      "scenario_id": 6,
+      "system_id": 1
+    },
+    {
+      "scenario_id": 7,
+      "system_id": 1
+    },
+    {
+      "scenario_id": 8,
+      "system_id": 1
+    },
+    {
+      "scenario_id": 9,
+      "system_id": 1
+    },
+    {
+      "scenario_id": 10,
+      "system_id": 1
+    }
+  ],
+  "t_scenario_pre": [
+    {
+      "id": 9,
+      "scenario_id": 1,
+      "description": "Table t_system created in database"
+    },
+    {
+      "id": 10,
+      "scenario_id": 1,
+      "description": "Column t_system.id must be SERIAL PK"
+    },
+    {
+      "id": 11,
+      "scenario_id": 1,
+      "description": "Column t_system.tile must be TEXT NOT NULL UNIQUE"
+    },
+    {
+      "id": 12,
+      "scenario_id": 1,
+      "description": "POST api endpoint /api/system with body requisition \"title\""
+    },
+    {
+      "id": 13,
+      "scenario_id": 2,
+      "description": "Table t_feature created in database"
+    },
+    {
+      "id": 14,
+      "scenario_id": 2,
+      "description": "Column t_feature.id must be SERIAL PK"
+    },
+    {
+      "id": 15,
+      "scenario_id": 2,
+      "description": "Column t_feature.title must be TEXT NOT NULL UNIQUE"
+    },
+    {
+      "id": 16,
+      "scenario_id": 2,
+      "description": "Column t_system_id must be INTEGER REFERENCE t_system.id NOT NULL"
+    },
+    {
+      "id": 17,
+      "scenario_id": 2,
+      "description": "POST api endpoint /api/feature with body requisition \"title\" & \"system_id\""
+    },
+    {
+      "id": 18,
+      "scenario_id": 3,
+      "description": "Table 't_system' must exist"
+    },
+    {
+      "id": 19,
+      "scenario_id": 5,
+      "description": "Table 't_feature' must exists"
+    },
+    {
+      "id": 20,
+      "scenario_id": 6,
+      "description": "Table 't_scenario_status' must exists"
+    },
+    {
+      "id": 22,
+      "scenario_id": 7,
+      "description": "Table 't_scenario_system' must exists"
+    },
+    {
+      "id": 23,
+      "scenario_id": 8,
+      "description": "Table 't_scenario' must exists"
+    },
+    {
+      "id": 24,
+      "scenario_id": 9,
+      "description": "Table 't_scenario_pre' must exist"
+    },
+    {
+      "id": 25,
+      "scenario_id": 10,
+      "description": "Table 't_scenario_expect' must exist"
+    }
+  ],
+  "t_scenario_expect": [
+    {
+      "id": 4,
+      "scenario_id": 1,
+      "description": "New line in t_system.id = new id | t_system.title = \"title\" from body POST req"
+    },
+    {
+      "id": 5,
+      "scenario_id": 2,
+      "description": "New line in t_feature.id = new id & t_feature.title = \"title\" from body POST req & t_feature.system_id \"system_id\" from body POST req"
+    },
+    {
+      "id": 6,
+      "scenario_id": 3,
+      "description": "Column 'id' must be SERIAL PRIMARY KEY"
+    },
+    {
+      "id": 7,
+      "scenario_id": 3,
+      "description": "Column 'title' must be TEXT NOT NULL UNIQUE"
+    },
+    {
+      "id": 8,
+      "scenario_id": 5,
+      "description": "Column 'id' must be SERIAL PRIMARY KEY"
+    },
+    {
+      "id": 9,
+      "scenario_id": 5,
+      "description": "Column 'title' must be TEXT NOT NULL UNIQUE"
+    },
+    {
+      "id": 10,
+      "scenario_id": 5,
+      "description": "Column 'system_id' must be INTEGER REFERENCES t_system(id) NOT NULL"
+    },
+    {
+      "id": 11,
+      "scenario_id": 6,
+      "description": "Column 'id' must be SERIAL PRIMARY KEY"
+    },
+    {
+      "id": 12,
+      "scenario_id": 6,
+      "description": "Column 'title' must be TEXT NOT NULL UNIQUE"
+    },
+    {
+      "id": 16,
+      "scenario_id": 7,
+      "description": "Column 'scenario_id' must be INTEGER REFERENCES t_scenario(id) ON DELETE CASCADE"
+    },
+    {
+      "id": 17,
+      "scenario_id": 7,
+      "description": "Column 'system_id' must be INTEGER REFERENCES t_system(id)"
+    },
+    {
+      "id": 18,
+      "scenario_id": 7,
+      "description": "Composed PRIMARY KEY(scenario_id, system_id)"
+    },
+    {
+      "id": 19,
+      "scenario_id": 8,
+      "description": "Column 'id' must be SERIAL PRIMARY KEY"
+    },
+    {
+      "id": 20,
+      "scenario_id": 8,
+      "description": "Column 'title' must be TEXT NOT NULL UNIQUE"
+    },
+    {
+      "id": 21,
+      "scenario_id": 8,
+      "description": "Column 'status_id' must be INTEGER REFERENCES t_scenario_status(id)"
+    },
+    {
+      "id": 22,
+      "scenario_id": 8,
+      "description": "Column 'feature_id' must be INTEGER REFERENCES t_feature(id)"
+    },
+    {
+      "id": 23,
+      "scenario_id": 9,
+      "description": "Column 'id' must be SERIAL PRIMARY KEY"
+    },
+    {
+      "id": 24,
+      "scenario_id": 9,
+      "description": "Column 'scenario_id' must be INTEGER NOT NULL REFERENCES t_scenario(id) ON DELETE CASCADE"
+    },
+    {
+      "id": 25,
+      "scenario_id": 9,
+      "description": "Column 'description' must be TEXT NOT NULL"
+    },
+    {
+      "id": 26,
+      "scenario_id": 10,
+      "description": "Column 'id' must be SERIAL PRIMARY KEY"
+    },
+    {
+      "id": 27,
+      "scenario_id": 10,
+      "description": "Column 'scenario_id' must be INTEGER NOT NULL REFERENCES t_scenario(id) ON DELETE CASCADE"
+    },
+    {
+      "id": 28,
+      "scenario_id": 10,
+      "description": "Column 'description' must be TEXT NOT NULL"
+    }
+  ]
+}
