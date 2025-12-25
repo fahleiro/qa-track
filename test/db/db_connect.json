@@ -3,5 +3,5 @@
     "port": 5432,
     "database": "qa_test_track",
     "user": "postgres",
-    "comment": "Porta pode ser sobrescrita via env P_POSTGRES"
+    "password": "postgres"
 }
