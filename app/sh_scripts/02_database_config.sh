@@ -1,19 +1,19 @@
 #!/bin/bash
 set -e
 
-echo "=== Configurando Database (Criando Tabelas) ==="
+echo "=== Configuring Database (Creating Tables) ==="
 
-# Porta configurável via variável de ambiente
+# Configurable port via environment variable
 POSTGRES_PORT="${P_POSTGRES:-5432}"
 
-# Espera o Postgres estar totalmente disponível
+# Wait for Postgres to be fully available
 sleep 2
 
-# Diretório dos scripts SQL
+# SQL scripts directory
 SQL_DIR="/app/db"
 
-# Executa script de criação de tabelas
-echo "--- Criando tabelas ---"
+# Execute script to create tables
+echo "--- Creating tables ---"
 su - postgres -c "psql -p $POSTGRES_PORT -d qa_test_track -f $SQL_DIR/01_create_tables.sql"
 
-echo "=== Database configurado com sucesso ==="
+echo "=== Database configured successfully ==="
