@@ -4,7 +4,15 @@ QA Track is a Software Quality Management System (SQMS).
 ## 🏗️ Architecture
 
 - **Backend**: Node.js
+    - express: "^4.18.2"
+    - pg: "^8.11.3"
+    - body-parser: "^1.20.2"
+    - cors: "^2.8.5"
 - **Frontend**: React
+    - 
+    -
+    -
+    
 - **Database**: PostgreSQL
 
 ## 📃 Features
