@@ -7,22 +7,15 @@ QA Track is a Software Quality Management System (SQMS).
 - **Frontend**: React
 - **Database**: PostgreSQL
 
-## 🐋 Docker Usage
-Run the application using the commands below.
+## 📃 Features
+- Systems create
+- Features create
+- Scenarios status create
+- Scenarios create
+- Scenario pre-conditions
+- Scenarios result expected
+- Relations between SYSTEMS x FEATURES x SCENARIOS STATUS x SCENARIOS x PRE CONDITIONS x RESULT EXPEXTED
 
-> **Note:** Don't forget the `.` at the end of the build command to specify the current directory.
-
-```bash
-# Build image
-docker build -t qa-track:latest --no-cache .
-
-# Start container
-docker run --name qa-track qa-track
-
-# Push to registry
-docker tag qa-track fahleiro/qa-track:latest
-docker push fahleiro/qa-track:latest
-```
 
 ## 🚪 Port Configuration
 You can override the default ports by passing environment variables when running the container.
@@ -32,6 +25,9 @@ You can override the default ports by passing environment variables when running
 | `P_API`        | 3000    | API Port    |
 | `P_INTERFACE`  | 5173    | Client Port |
 | `P_POSTGRES`   | 5432    | Database Port|
+
+## 🐋 Docker Usage
+Run the application using the commands below.
 
 ```bash
 # Example with custom ports 

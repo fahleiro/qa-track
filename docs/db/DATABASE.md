@@ -1,7 +1,6 @@
 # Database
-> Documentação QA Track DB
 
-## Tabelas
+## Tables
 - t_system
 - t_feature
 - t_scenario_status

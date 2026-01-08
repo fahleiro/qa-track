@@ -1,79 +1,79 @@
-# Tabelas
-> Documentação das tabelas QA Track DB - v0.1.0
+# Tables
+> QA Track DB tables documentation – v0.1.0
 
 ---
 
 ## t_system
-> Gerencia os sistemas aos quais os cenários e funcionalidades fazem parte.
+> Manages the systems to which scenarios and features belong.
 
-| Coluna | Tipo | Restrições | Descrição |
-|--------|------|------------|-----------|
-| id | SERIAL | PK | Identificador único do sistema |
-| title | TEXT | NOT NULL, UNIQUE | Nome único do sistema |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | SERIAL | PK | Unique system identifier |
+| title | TEXT | NOT NULL, UNIQUE | Unique system name |
 
 ---
 
 ## t_feature
-> Gerencia as funcionalidades vinculadas a um sistema.
+> Manages features linked to a system.
 
-| Coluna | Tipo | Restrições | Descrição |
-|--------|------|------------|-----------|
-| id | SERIAL | PK | Identificador único da funcionalidade |
-| title | TEXT | NOT NULL, UNIQUE | Nome único da funcionalidade |
-| system_id | INTEGER | FK → t_system(id), NOT NULL | Sistema ao qual a funcionalidade pertence |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | SERIAL | PK | Unique feature identifier |
+| title | TEXT | NOT NULL, UNIQUE | Unique feature name |
+| system_id | INTEGER | FK → t_system(id), NOT NULL | System to which the feature belongs |
 
 ---
 
 ## t_scenario_status
-> Status possíveis para cenários de teste.
+> Possible statuses for test scenarios.
 
-| Coluna | Tipo | Restrições | Descrição |
-|--------|------|------------|-----------|
-| id | SERIAL | PK | Identificador único do status |
-| title | TEXT | NOT NULL, UNIQUE | Nome único do status (ex: Ativo, Inativo, Obsoleto) |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | SERIAL | PK | Unique status identifier |
+| title | TEXT | NOT NULL, UNIQUE | Unique status name (e.g., Active, Inactive, Obsolete) |
 
 ---
 
 ## t_scenario
-> Cenários de teste cadastrados no sistema.
+> Test scenarios registered in the system.
 
-| Coluna | Tipo | Restrições | Descrição |
-|--------|------|------------|-----------|
-| id | SERIAL | PK | Identificador único do cenário |
-| title | TEXT | NOT NULL, UNIQUE | Título único do cenário |
-| status_id | INTEGER | FK → t_scenario_status(id) | Status atual do cenário |
-| feature_id | INTEGER | FK → t_feature(id) | Funcionalidade vinculada ao cenário |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | SERIAL | PK | Unique scenario identifier |
+| title | TEXT | NOT NULL, UNIQUE | Unique scenario title |
+| status_id | INTEGER | FK → t_scenario_status(id) | Current scenario status |
+| feature_id | INTEGER | FK → t_feature(id) | Feature linked to the scenario |
 
 ---
 
 ## t_scenario_system
-> Tabela de relacionamento N:N entre cenários e sistemas.
+> N:N relationship table between scenarios and systems.
 
-| Coluna | Tipo | Restrições | Descrição |
-|--------|------|------------|-----------|
-| scenario_id | INTEGER | FK → t_scenario(id), PK | Cenário vinculado |
-| system_id | INTEGER | FK → t_system(id), PK | Sistema vinculado |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| scenario_id | INTEGER | FK → t_scenario(id), PK | Linked scenario |
+| system_id | INTEGER | FK → t_system(id), PK | Linked system |
 
 ---
 
 ## t_scenario_pre
-> Pré-requisitos de cenários de teste.
+> Preconditions for test scenarios.
 
-| Coluna | Tipo | Restrições | Descrição |
-|--------|------|------------|-----------|
-| id | SERIAL | PK | Identificador único do pré-requisito |
-| scenario_id | INTEGER | FK → t_scenario(id), NOT NULL | Cenário ao qual o pré-requisito pertence |
-| description | TEXT | NOT NULL | Descrição do pré-requisito |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | SERIAL | PK | Unique precondition identifier |
+| scenario_id | INTEGER | FK → t_scenario(id), NOT NULL | Scenario to which the precondition belongs |
+| description | TEXT | NOT NULL | Precondition description |
 
 ---
 
 ## t_scenario_expect
-> Resultados esperados de cenários de teste.
+> Expected results for test scenarios.
 
-| Coluna | Tipo | Restrições | Descrição |
-|--------|------|------------|-----------|
-| id | SERIAL | PK | Identificador único do resultado esperado |
-| scenario_id | INTEGER | FK → t_scenario(id), NOT NULL | Cenário ao qual o resultado pertence |
-| description | TEXT | NOT NULL | Descrição do resultado esperado |
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | SERIAL | PK | Unique expected result identifier |
+| scenario_id | INTEGER | FK → t_scenario(id), NOT NULL | Scenario to which the expected result belongs |
+| description | TEXT | NOT NULL | Expected result description |
 
 ---
