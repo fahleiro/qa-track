@@ -14,8 +14,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import java.time.Duration;
 
 /**
- * Hooks do Cucumber para setup e teardown
- * QA Track - v1.0.0
+ * Cucumber Hooks for setup and teardown
  */
 public class Hooks {
 
@@ -23,27 +22,27 @@ public class Hooks {
     private static boolean isWebTest = false;
 
     /**
-     * Setup executado antes de cada cenario WEB
-     * Inicializa o WebDriver apenas para testes com tag @WEB
+     * Setup executed before each WEB scenario
+     * Initializes WebDriver only for tests with @WEB tag
      */
     @Before("@WEB")
     public void setupWebDriver(Scenario scenario) {
         isWebTest = true;
-        System.out.println("\n[SETUP] Inicializando WebDriver para: " + scenario.getName());
+        System.out.println("\n[SETUP] Initializing WebDriver for: " + scenario.getName());
         
-        // Configura o WebDriverManager para baixar o ChromeDriver automaticamente
+        // Configures WebDriverManager to download ChromeDriver automatically
         WebDriverManager.chromedriver().setup();
         
-        // Configura opcoes do Chrome
+        // Configure Chrome options
         ChromeOptions options = new ChromeOptions();
         
-        // Modo headless para CI/CD
+        // Headless mode for CI/CD
         if (TestConfig.HEADLESS) {
             options.addArguments("--headless=new");
-            System.out.println("[CONFIG] Modo HEADLESS ativado");
+            System.out.println("[CONFIG] HEADLESS mode enabled");
         }
         
-        // Argumentos necessarios para execucao em Docker/CI
+        // Arguments required for Docker/CI execution
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
@@ -51,75 +50,75 @@ public class Hooks {
         options.addArguments("--disable-extensions");
         options.addArguments("--disable-infobars");
         
-        // Inicializa o driver
+        // Initialize the driver
         driver = new ChromeDriver(options);
         
-        // Configura timeouts
+        // Configure timeouts
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(TestConfig.IMPLICIT_WAIT));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(TestConfig.PAGE_LOAD_TIMEOUT));
         
-        System.out.println("[SETUP] WebDriver inicializado com sucesso");
+        System.out.println("[SETUP] WebDriver initialized successfully");
     }
 
     /**
-     * Setup executado antes de cada cenario API
-     * Apenas log, nao precisa de WebDriver
+     * Setup executed before each API scenario
+     * Just logging, no WebDriver needed
      */
     @Before("@API")
     public void setupAPI(Scenario scenario) {
         isWebTest = false;
-        System.out.println("\n[SETUP] Iniciando teste API: " + scenario.getName());
+        System.out.println("\n[SETUP] Starting API test: " + scenario.getName());
         System.out.println("[CONFIG] API_BASE_URL: " + TestConfig.API_BASE_URL);
     }
 
     /**
-     * Teardown executado apos cada cenario WEB
-     * Captura screenshot em caso de falha e fecha o navegador
+     * Teardown executed after each WEB scenario
+     * Captures screenshot on failure and closes the browser
      */
     @After("@WEB")
     public void teardownWebDriver(Scenario scenario) {
         if (driver != null) {
-            // Captura screenshot se o cenario falhou
+            // Capture screenshot if scenario failed
             if (scenario.isFailed()) {
-                System.out.println("[TEARDOWN] Cenario falhou - capturando screenshot");
+                System.out.println("[TEARDOWN] Scenario failed - capturing screenshot");
                 try {
                     byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
-                    scenario.attach(screenshot, "image/png", "screenshot_falha");
+                    scenario.attach(screenshot, "image/png", "failure_screenshot");
                 } catch (Exception e) {
-                    System.out.println("[TEARDOWN] Erro ao capturar screenshot: " + e.getMessage());
+                    System.out.println("[TEARDOWN] Error capturing screenshot: " + e.getMessage());
                 }
             }
             
-            // Fecha o navegador
+            // Close the browser
             driver.quit();
             driver = null;
-            System.out.println("[TEARDOWN] WebDriver encerrado");
+            System.out.println("[TEARDOWN] WebDriver closed");
         }
     }
 
     /**
-     * Teardown executado apos cada cenario API
+     * Teardown executed after each API scenario
      */
     @After("@API")
     public void teardownAPI(Scenario scenario) {
         if (scenario.isFailed()) {
-            System.out.println("[TEARDOWN] Cenario API falhou: " + scenario.getName());
+            System.out.println("[TEARDOWN] API scenario failed: " + scenario.getName());
         } else {
-            System.out.println("[TEARDOWN] Cenario API concluido com sucesso");
+            System.out.println("[TEARDOWN] API scenario completed successfully");
         }
     }
 
     /**
-     * Retorna a instancia do WebDriver atual
-     * @return WebDriver ou null se nao for teste WEB
+     * Returns the current WebDriver instance
+     * @return WebDriver or null if not a WEB test
      */
     public static WebDriver getDriver() {
         return driver;
     }
 
     /**
-     * Verifica se o teste atual e um teste WEB
-     * @return true se for teste WEB
+     * Checks if the current test is a WEB test
+     * @return true if it's a WEB test
      */
     public static boolean isWebTest() {
         return isWebTest;

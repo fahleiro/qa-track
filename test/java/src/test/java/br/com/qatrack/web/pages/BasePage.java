@@ -13,8 +13,8 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * Classe base para Page Objects
- * Contem metodos utilitarios comuns para todas as paginas
+ * Base class for Page Objects
+ * Contains common utility methods for all pages
  * QA Track - v1.0.0
  */
 public abstract class BasePage {
@@ -23,7 +23,7 @@ public abstract class BasePage {
     protected WebDriverWait wait;
 
     /**
-     * Construtor padrao - obtem driver dos Hooks
+     * Default constructor - gets driver from Hooks
      */
     public BasePage() {
         this.driver = Hooks.getDriver();
@@ -31,8 +31,8 @@ public abstract class BasePage {
     }
 
     /**
-     * Navega para uma URL relativa
-     * @param path Caminho relativo (ex: "/config")
+     * Navigates to a relative URL
+     * @param path Relative path (e.g.: "/config")
      */
     protected void navigateTo(String path) {
         String url = TestConfig.WEB_BASE_URL + path;
@@ -41,35 +41,35 @@ public abstract class BasePage {
     }
 
     /**
-     * Aguarda ate que um elemento esteja visivel
-     * @param locator Localizador do elemento
-     * @return WebElement encontrado
+     * Waits until an element is visible
+     * @param locator Element locator
+     * @return Found WebElement
      */
     protected WebElement waitForElement(By locator) {
         return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
     /**
-     * Aguarda ate que um elemento esteja clicavel
-     * @param locator Localizador do elemento
-     * @return WebElement clicavel
+     * Waits until an element is clickable
+     * @param locator Element locator
+     * @return Clickable WebElement
      */
     protected WebElement waitForClickable(By locator) {
         return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
     /**
-     * Clica em um elemento
-     * @param locator Localizador do elemento
+     * Clicks on an element
+     * @param locator Element locator
      */
     protected void click(By locator) {
         waitForClickable(locator).click();
     }
 
     /**
-     * Preenche um campo de texto
-     * @param locator Localizador do elemento
-     * @param text Texto a ser digitado
+     * Fills a text field
+     * @param locator Element locator
+     * @param text Text to type
      */
     protected void type(By locator, String text) {
         WebElement element = waitForElement(locator);
@@ -78,18 +78,18 @@ public abstract class BasePage {
     }
 
     /**
-     * Obtem o texto de um elemento
-     * @param locator Localizador do elemento
-     * @return Texto do elemento
+     * Gets the text of an element
+     * @param locator Element locator
+     * @return Element text
      */
     protected String getText(By locator) {
         return waitForElement(locator).getText();
     }
 
     /**
-     * Verifica se um elemento esta visivel
-     * @param locator Localizador do elemento
-     * @return true se visivel
+     * Checks if an element is visible
+     * @param locator Element locator
+     * @return true if visible
      */
     protected boolean isElementVisible(By locator) {
         try {
@@ -100,9 +100,9 @@ public abstract class BasePage {
     }
 
     /**
-     * Verifica se um texto esta presente na pagina
-     * @param text Texto a ser procurado
-     * @return true se encontrado
+     * Checks if a text is present on the page
+     * @param text Text to search for
+     * @return true if found
      */
     protected boolean isTextPresent(String text) {
         try {
@@ -115,7 +115,7 @@ public abstract class BasePage {
     }
 
     /**
-     * Aguarda o carregamento completo da pagina
+     * Waits for the page to fully load
      */
     protected void waitForPageLoad() {
         wait.until(webDriver -> 
@@ -124,27 +124,27 @@ public abstract class BasePage {
     }
 
     /**
-     * Encontra todos os elementos que correspondem ao localizador
-     * @param locator Localizador dos elementos
-     * @return Lista de elementos
+     * Finds all elements matching the locator
+     * @param locator Elements locator
+     * @return List of elements
      */
     protected List<WebElement> findElements(By locator) {
         return driver.findElements(locator);
     }
 
     /**
-     * Executa JavaScript na pagina
-     * @param script Script JavaScript
-     * @param args Argumentos opcionais
-     * @return Resultado da execucao
+     * Executes JavaScript on the page
+     * @param script JavaScript script
+     * @param args Optional arguments
+     * @return Execution result
      */
     protected Object executeScript(String script, Object... args) {
         return ((JavascriptExecutor) driver).executeScript(script, args);
     }
 
     /**
-     * Aguarda um tempo especifico (usar com moderacao)
-     * @param milliseconds Tempo em milissegundos
+     * Waits for a specific time (use sparingly)
+     * @param milliseconds Time in milliseconds
      */
     protected void sleep(long milliseconds) {
         try {
@@ -155,16 +155,16 @@ public abstract class BasePage {
     }
 
     /**
-     * Obtem o titulo da pagina atual
-     * @return Titulo da pagina
+     * Gets the current page title
+     * @return Page title
      */
     protected String getPageTitle() {
         return driver.getTitle();
     }
 
     /**
-     * Obtem a URL atual
-     * @return URL atual
+     * Gets the current URL
+     * @return Current URL
      */
     protected String getCurrentUrl() {
         return driver.getCurrentUrl();

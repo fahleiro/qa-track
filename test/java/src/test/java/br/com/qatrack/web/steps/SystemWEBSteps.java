@@ -1,59 +1,74 @@
 package br.com.qatrack.web.steps;
 
 import br.com.qatrack.web.interactions.SystemWEBInteractions;
-import io.cucumber.java.pt.Dado;
-import io.cucumber.java.pt.Entao;
-import io.cucumber.java.pt.Quando;
-import io.cucumber.java.pt.E;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.cucumber.java.en.And;
 
 /**
- * Step Definitions para testes WEB - Sistema
- * Apenas mapeia steps para chamadas de Interactions
+ * Step Definitions for WEB tests - System
+ * Only maps steps to Interactions calls
  * QA Track - v1.0.0
  */
 public class SystemWEBSteps {
 
     private final SystemWEBInteractions webInteractions = new SystemWEBInteractions();
 
-    @Dado("que estou na pagina de configuracoes")
-    public void queEstouNaPaginaDeConfiguracoes() {
-        webInteractions.inicializarPaginas();
-        webInteractions.abrirPaginaConfiguracoes();
-        webInteractions.validarPaginaCarregada();
+    @Given("I am on the home page")
+    public void iAmOnTheHomePage() {
+        webInteractions.initializePages();
+        webInteractions.openHomePage();
+        webInteractions.validateHomePageLoaded();
     }
 
-    @Quando("eu clico na aba {string}")
-    public void euClicoNaAba(String nomeAba) {
-        webInteractions.clicarAba(nomeAba);
+    @Given("I am on the settings page")
+    public void iAmOnTheSettingsPage() {
+        webInteractions.initializePages();
+        webInteractions.openHomePage();
+        webInteractions.validateHomePageLoaded();
+        webInteractions.navigateToConfigPage();
+        webInteractions.validateSettingsPageLoaded();
     }
 
-    @E("preencho o campo de sistema com {string}")
-    public void preenchoOCampoDeSistemaCom(String nomeSistema) {
-        webInteractions.preencherCampoNovoItem(nomeSistema);
+    @When("I navigate to the settings page")
+    public void iNavigateToTheSettingsPage() {
+        webInteractions.navigateToConfigPage();
+        webInteractions.validateSettingsPageLoaded();
     }
 
-    @E("clico no botao {string}")
-    public void clicoNoBotao(String nomeBotao) {
-        webInteractions.clicarBotao(nomeBotao);
+    @When("I click on the {string} tab")
+    public void iClickOnTheTab(String tabName) {
+        webInteractions.clickTab(tabName);
     }
 
-    @Entao("o sistema {string} deve aparecer na lista")
-    public void oSistemaDeveAparecerNaLista(String nomeSistema) {
-        webInteractions.validarSistemaNaLista(nomeSistema);
+    @And("I fill in the system field with {string}")
+    public void iFillInTheSystemFieldWith(String systemName) {
+        webInteractions.fillNewItemField(systemName);
     }
 
-    @Entao("o item {string} deve existir na lista")
-    public void oItemDeveExistirNaLista(String nomeItem) {
-        webInteractions.validarItemNaLista(nomeItem);
+    @And("I click the {string} button")
+    public void iClickTheButton(String buttonName) {
+        webInteractions.clickButton(buttonName);
     }
 
-    @Entao("a lista deve conter pelo menos {int} item(s)")
-    public void aListaDeveConterPeloMenosItens(int quantidadeMinima) {
-        webInteractions.validarQuantidadeMinimaItens(quantidadeMinima);
+    @Then("the system {string} should appear in the list")
+    public void theSystemShouldAppearInTheList(String systemName) {
+        webInteractions.validateSystemInList(systemName);
     }
 
-    @Quando("eu crio um novo sistema com nome {string}")
-    public void euCrioUmNovoSistemaComNome(String nomeSistema) {
-        webInteractions.criarSistema(nomeSistema);
+    @Then("the item {string} should exist in the list")
+    public void theItemShouldExistInTheList(String itemName) {
+        webInteractions.validateItemInList(itemName);
+    }
+
+    @Then("the list should contain at least {int} item(s)")
+    public void theListShouldContainAtLeastItems(int minimumQuantity) {
+        webInteractions.validateMinimumItemCount(minimumQuantity);
+    }
+
+    @When("I create a new system with name {string}")
+    public void iCreateANewSystemWithName(String systemName) {
+        webInteractions.createSystem(systemName);
     }
 }

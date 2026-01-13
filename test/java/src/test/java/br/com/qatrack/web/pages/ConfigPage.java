@@ -6,96 +6,86 @@ import org.openqa.selenium.WebElement;
 import java.util.List;
 
 /**
- * Page Object da pagina de Configuracoes
+ * Page Object for the Settings page
  * QA Track - v1.0.0
  */
 public class ConfigPage extends BasePage {
 
     // ========================================
-    // Localizadores
+    // Locators
     // ========================================
     
-    // Abas
-    private static final By TAB_SISTEMAS = By.xpath("//button[contains(@class, 'tab') and contains(text(), 'Sistemas')]");
+    // Tabs
+    private static final By TAB_SYSTEMS = By.xpath("//button[contains(@class, 'tab') and contains(text(), 'Sistemas')]");
     private static final By TAB_STATUS = By.xpath("//button[contains(@class, 'tab') and contains(text(), 'Status')]");
     
-    // Formulario de adicao
-    private static final By INPUT_NOVO_ITEM = By.cssSelector(".inline-add input.form-input");
-    private static final By BTN_ADICIONAR = By.xpath("//button[contains(@class, 'btn-primary') and contains(text(), 'Adicionar')]");
+    // Add form
+    private static final By INPUT_NEW_ITEM = By.cssSelector(".inline-add input.form-input");
+    private static final By BTN_ADD = By.xpath("//button[contains(@class, 'btn-primary') and contains(text(), 'Adicionar')]");
     
-    // Lista de itens
-    private static final By LISTA_ITENS = By.cssSelector(".list-item");
-    private static final By TEXTO_ITEM = By.cssSelector(".list-item-text");
+    // Item list
+    private static final By LIST_ITEMS = By.cssSelector(".list-item");
 
     // ========================================
-    // Acoes
+    // Actions
     // ========================================
-    
-    /**
-     * Navega para a pagina de configuracoes
-     */
-    public void abrirPaginaConfiguracoes() {
-        navigateTo("/config");
-        waitForPageLoad();
-        sleep(500); // Aguarda carregamento inicial
-    }
 
     /**
-     * Clica na aba Sistemas
+     * Clicks on the Systems tab
      */
-    public void clicarAbaSistemas() {
-        click(TAB_SISTEMAS);
+    public void clickSystemsTab() {
+        click(TAB_SYSTEMS);
         sleep(300);
     }
 
     /**
-     * Clica na aba Status
+     * Clicks on the Status tab
      */
-    public void clicarAbaStatus() {
+    public void clickStatusTab() {
         click(TAB_STATUS);
         sleep(300);
     }
 
     /**
-     * Preenche o campo de novo sistema/item
-     * @param texto Texto a ser preenchido
+     * Fills the new system/item field
+     * @param text Text to fill
      */
-    public void preencherCampoNovoItem(String texto) {
-        type(INPUT_NOVO_ITEM, texto);
+    public void fillNewItemField(String text) {
+        type(INPUT_NEW_ITEM, text);
     }
 
     /**
-     * Clica no botao Adicionar
+     * Clicks the Add button
      */
-    public void clicarBotaoAdicionar() {
-        click(BTN_ADICIONAR);
-        sleep(1000); // Aguarda a requisicao e atualizacao da lista
+    public void clickAddButton() {
+        click(BTN_ADD);
+        sleep(1000);
     }
 
     /**
-     * Cria um novo sistema
-     * @param nomeSistema Nome do sistema a ser criado
+     * Creates a new system
+     * @param systemName Name of the system to create
      */
-    public void criarSistema(String nomeSistema) {
-        clicarAbaSistemas();
-        preencherCampoNovoItem(nomeSistema);
-        clicarBotaoAdicionar();
+    public void createSystem(String systemName) {
+        clickSystemsTab();
+        fillNewItemField(systemName);
+        clickAddButton();
     }
 
     // ========================================
-    // Validacoes
+    // Validations
     // ========================================
     
     /**
-     * Verifica se um item esta presente na lista
-     * @param texto Texto do item a ser procurado
-     * @return true se encontrado
+     * Checks if an item is present in the list
+     * @param text Text of the item to search for
+     * @return true if found
      */
-    public boolean itemExisteNaLista(String texto) {
-        List<WebElement> itens = findElements(LISTA_ITENS);
-        for (WebElement item : itens) {
-            String textoItem = item.getText();
-            if (textoItem.contains(texto)) {
+    public boolean itemExistsInList(String text) {
+        List<WebElement> items = findElements(LIST_ITEMS);
+        for (WebElement item : items) {
+            String itemText = item.getText();
+            if (itemText.contains(text)) {
                 return true;
             }
         }
@@ -103,35 +93,35 @@ public class ConfigPage extends BasePage {
     }
 
     /**
-     * Aguarda ate que um item apareca na lista
-     * @param texto Texto do item esperado
-     * @return true se encontrado dentro do timeout
+     * Waits until an item appears in the list
+     * @param text Text of the expected item
+     * @return true if found within timeout
      */
-    public boolean aguardarItemNaLista(String texto) {
-        int tentativas = 10;
-        while (tentativas > 0) {
-            if (itemExisteNaLista(texto)) {
+    public boolean waitForItemInList(String text) {
+        int attempts = 10;
+        while (attempts > 0) {
+            if (itemExistsInList(text)) {
                 return true;
             }
             sleep(500);
-            tentativas--;
+            attempts--;
         }
         return false;
     }
 
     /**
-     * Obtem a quantidade de itens na lista
-     * @return Numero de itens
+     * Gets the item count in the list
+     * @return Number of items
      */
-    public int contarItensNaLista() {
-        return findElements(LISTA_ITENS).size();
+    public int countItemsInList() {
+        return findElements(LIST_ITEMS).size();
     }
 
     /**
-     * Verifica se a pagina de configuracoes foi carregada
-     * @return true se carregada
+     * Checks if the settings page has loaded
+     * @return true if loaded
      */
-    public boolean paginaCarregada() {
-        return isElementVisible(TAB_SISTEMAS) && isElementVisible(TAB_STATUS);
+    public boolean isPageLoaded() {
+        return isElementVisible(TAB_SYSTEMS) && isElementVisible(TAB_STATUS);
     }
 }

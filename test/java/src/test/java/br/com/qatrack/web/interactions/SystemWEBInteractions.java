@@ -1,159 +1,190 @@
 package br.com.qatrack.web.interactions;
 
 import br.com.qatrack.web.pages.ConfigPage;
+import br.com.qatrack.web.pages.HomePage;
 
 import static org.junit.Assert.*;
 
 /**
- * Interacoes WEB com a funcionalidade de Sistemas
- * Contem toda a logica de interacao com a interface
+ * WEB interactions with System functionality
+ * Contains all interface interaction logic
  * QA Track - v1.0.0
  */
 public class SystemWEBInteractions {
 
+    private HomePage homePage;
     private ConfigPage configPage;
 
     /**
-     * Inicializa as paginas necessarias
+     * Initializes the required pages
      */
-    public void inicializarPaginas() {
+    public void initializePages() {
+        homePage = new HomePage();
         configPage = new ConfigPage();
     }
 
     /**
-     * Abre a pagina de configuracoes
+     * Opens the application home page
      */
-    public void abrirPaginaConfiguracoes() {
-        configPage.abrirPaginaConfiguracoes();
-        System.out.println("[WEB] Pagina de configuracoes aberta");
+    public void openHomePage() {
+        homePage.openHomePage();
+        System.out.println("[WEB] Home page opened");
     }
 
     /**
-     * Valida que a pagina de configuracoes foi carregada
+     * Validates that the home page has loaded
      */
-    public void validarPaginaCarregada() {
+    public void validateHomePageLoaded() {
         assertTrue(
-            "A pagina de configuracoes deve estar carregada",
-            configPage.paginaCarregada()
+            "Home page should be loaded",
+            homePage.isHomePageLoaded()
         );
-        System.out.println("[WEB] Pagina de configuracoes carregada com sucesso");
+        System.out.println("[WEB] Home page loaded successfully");
     }
 
     /**
-     * Clica na aba Sistemas
+     * Navigates to the settings page via menu
      */
-    public void clicarAbaSistemas() {
-        configPage.clicarAbaSistemas();
-        System.out.println("[WEB] Aba 'Sistemas' selecionada");
+    public void navigateToConfigPage() {
+        homePage.navigateToConfigPage();
+        System.out.println("[WEB] Navigated to settings page via menu");
     }
 
     /**
-     * Clica na aba Status
+     * Validates that the settings page has loaded
      */
-    public void clicarAbaStatus() {
-        configPage.clicarAbaStatus();
-        System.out.println("[WEB] Aba 'Status' selecionada");
+    public void validateSettingsPageLoaded() {
+        assertTrue(
+            "Settings page should be loaded",
+            configPage.isPageLoaded()
+        );
+        System.out.println("[WEB] Settings page loaded successfully");
     }
 
     /**
-     * Clica em uma aba pelo nome
-     * @param nomeAba Nome da aba
+     * Clicks on the Systems tab
      */
-    public void clicarAba(String nomeAba) {
-        switch (nomeAba.toLowerCase()) {
+    public void clickSystemsTab() {
+        configPage.clickSystemsTab();
+        System.out.println("[WEB] 'Systems' tab selected");
+    }
+
+    /**
+     * Clicks on the Status tab
+     */
+    public void clickStatusTab() {
+        configPage.clickStatusTab();
+        System.out.println("[WEB] 'Status' tab selected");
+    }
+
+    /**
+     * Clicks on a tab by name
+     * @param tabName Tab name
+     */
+    public void clickTab(String tabName) {
+        switch (tabName.toLowerCase()) {
+            case "systems":
             case "sistemas":
-                clicarAbaSistemas();
+                clickSystemsTab();
                 break;
             case "status":
-                clicarAbaStatus();
+                clickStatusTab();
                 break;
             default:
-                fail("Aba desconhecida: " + nomeAba);
+                fail("Unknown tab: " + tabName);
         }
     }
 
     /**
-     * Preenche o campo de novo item
-     * @param texto Texto a preencher
+     * Fills the new item field
+     * @param text Text to fill
      */
-    public void preencherCampoNovoItem(String texto) {
-        configPage.preencherCampoNovoItem(texto);
-        System.out.println("[WEB] Campo preenchido com: " + texto);
+    public void fillNewItemField(String text) {
+        configPage.fillNewItemField(text);
+        System.out.println("[WEB] Field filled with: " + text);
     }
 
     /**
-     * Clica no botao Adicionar
+     * Clicks the Add button
      */
-    public void clicarBotaoAdicionar() {
-        configPage.clicarBotaoAdicionar();
-        System.out.println("[WEB] Botao 'Adicionar' clicado");
+    public void clickAddButton() {
+        configPage.clickAddButton();
+        System.out.println("[WEB] 'Add' button clicked");
     }
 
     /**
-     * Clica em um botao pelo nome
-     * @param nomeBotao Nome do botao
+     * Clicks a button by name
+     * @param buttonName Button name
      */
-    public void clicarBotao(String nomeBotao) {
-        if (nomeBotao.equalsIgnoreCase("Adicionar")) {
-            clicarBotaoAdicionar();
+    public void clickButton(String buttonName) {
+        if (buttonName.equalsIgnoreCase("Add") || buttonName.equalsIgnoreCase("Adicionar")) {
+            clickAddButton();
         } else {
-            fail("Botao desconhecido: " + nomeBotao);
+            fail("Unknown button: " + buttonName);
         }
     }
 
     /**
-     * Cria um novo sistema
-     * @param nomeSistema Nome do sistema
+     * Creates a new system
+     * @param systemName System name
      */
-    public void criarSistema(String nomeSistema) {
-        configPage.criarSistema(nomeSistema);
-        System.out.println("[WEB] Sistema '" + nomeSistema + "' criado");
+    public void createSystem(String systemName) {
+        configPage.createSystem(systemName);
+        System.out.println("[WEB] System '" + systemName + "' created");
     }
 
     /**
-     * Valida que um sistema existe na lista
-     * @param nomeSistema Nome do sistema
+     * Validates that a system exists in the list
+     * @param systemName System name
      */
-    public void validarSistemaNaLista(String nomeSistema) {
-        boolean encontrado = configPage.aguardarItemNaLista(nomeSistema);
+    public void validateSystemInList(String systemName) {
+        boolean found = configPage.waitForItemInList(systemName);
         assertTrue(
-            "O sistema '" + nomeSistema + "' deve aparecer na lista",
-            encontrado
+            "System '" + systemName + "' should appear in the list",
+            found
         );
-        System.out.println("[WEB] Sistema '" + nomeSistema + "' encontrado na lista");
+        System.out.println("[WEB] System '" + systemName + "' found in list");
     }
 
     /**
-     * Valida que um item existe na lista
-     * @param nomeItem Nome do item
+     * Validates that an item exists in the list
+     * @param itemName Item name
      */
-    public void validarItemNaLista(String nomeItem) {
-        boolean encontrado = configPage.itemExisteNaLista(nomeItem);
+    public void validateItemInList(String itemName) {
+        boolean found = configPage.itemExistsInList(itemName);
         assertTrue(
-            "O item '" + nomeItem + "' deve existir na lista",
-            encontrado
+            "Item '" + itemName + "' should exist in the list",
+            found
         );
-        System.out.println("[WEB] Item '" + nomeItem + "' verificado na lista");
+        System.out.println("[WEB] Item '" + itemName + "' verified in list");
     }
 
     /**
-     * Valida quantidade minima de itens na lista
-     * @param quantidadeMinima Quantidade minima esperada
+     * Validates minimum item count in the list
+     * @param minimumQuantity Expected minimum quantity
      */
-    public void validarQuantidadeMinimaItens(int quantidadeMinima) {
-        int quantidade = configPage.contarItensNaLista();
+    public void validateMinimumItemCount(int minimumQuantity) {
+        int count = configPage.countItemsInList();
         assertTrue(
-            "A lista deve conter pelo menos " + quantidadeMinima + " item(s), mas contem " + quantidade,
-            quantidade >= quantidadeMinima
+            "List should contain at least " + minimumQuantity + " item(s), but contains " + count,
+            count >= minimumQuantity
         );
-        System.out.println("[WEB] Lista contem " + quantidade + " item(s)");
+        System.out.println("[WEB] List contains " + count + " item(s)");
     }
 
     /**
-     * Obtem a pagina de configuracoes
+     * Gets the settings page
      * @return ConfigPage
      */
     public ConfigPage getConfigPage() {
         return configPage;
+    }
+
+    /**
+     * Gets the home page
+     * @return HomePage
+     */
+    public HomePage getHomePage() {
+        return homePage;
     }
 }

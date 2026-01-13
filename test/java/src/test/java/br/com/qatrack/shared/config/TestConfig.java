@@ -1,75 +1,74 @@
 package br.com.qatrack.shared.config;
 
 /**
- * Configuracoes centralizadas para os testes automatizados
- * QA Track - v1.0.0
+ * Centralized configurations for automated tests
  */
 public class TestConfig {
 
     // ========================================
-    // URLs Base
+    // Base URLs
     // ========================================
     
     /**
-     * URL base da API
-     * Pode ser sobrescrita via variavel de ambiente API_BASE_URL
+     * API base URL
+     * Can be overridden via API_BASE_URL environment variable
      */
-    public static final String API_BASE_URL = getEnvOrDefault("API_BASE_URL", "http://localhost:3000");
+    public static final String API_BASE_URL = getEnvOrDefault("API_BASE_URL", "http://localhost:3001");
     
     /**
-     * URL base da Interface Web
-     * Pode ser sobrescrita via variavel de ambiente WEB_BASE_URL
+     * Web Interface base URL
+     * Can be overridden via WEB_BASE_URL environment variable
      */
     public static final String WEB_BASE_URL = getEnvOrDefault("WEB_BASE_URL", "http://localhost:5174");
 
     // ========================================
-    // Timeouts (em segundos)
+    // Timeouts (in seconds)
     // ========================================
     
     /**
-     * Timeout padrao para espera de elementos
+     * Default timeout for waiting for elements
      */
     public static final int DEFAULT_TIMEOUT = 10;
     
     /**
-     * Timeout para carregamento de pagina
+     * Page load timeout
      */
     public static final int PAGE_LOAD_TIMEOUT = 30;
     
     /**
-     * Timeout implicito do WebDriver
+     * WebDriver implicit wait timeout
      */
     public static final int IMPLICIT_WAIT = 5;
 
     // ========================================
-    // Configuracoes do Browser
+    // Browser Settings
     // ========================================
     
     /**
-     * Verifica se deve executar em modo headless
-     * Ativado via variavel de ambiente HEADLESS=true
+     * Checks if it should run in headless mode
+     * Enabled via HEADLESS=true environment variable
      */
     public static final boolean HEADLESS = Boolean.parseBoolean(getEnvOrDefault("HEADLESS", "false"));
     
     /**
-     * Largura da janela do navegador
+     * Browser window width
      */
     public static final int BROWSER_WIDTH = 1920;
     
     /**
-     * Altura da janela do navegador
+     * Browser window height
      */
     public static final int BROWSER_HEIGHT = 1080;
 
     // ========================================
-    // Metodos Utilitarios
+    // Utility Methods
     // ========================================
     
     /**
-     * Obtem valor de variavel de ambiente ou retorna valor padrao
-     * @param envName Nome da variavel de ambiente
-     * @param defaultValue Valor padrao caso a variavel nao exista
-     * @return Valor da variavel ou valor padrao
+     * Gets environment variable value or returns default value
+     * @param envName Environment variable name
+     * @param defaultValue Default value if variable doesn't exist
+     * @return Variable value or default value
      */
     private static String getEnvOrDefault(String envName, String defaultValue) {
         String value = System.getenv(envName);
@@ -77,11 +76,11 @@ public class TestConfig {
     }
     
     /**
-     * Imprime as configuracoes atuais (util para debug)
+     * Prints current configurations (useful for debugging)
      */
     public static void printConfig() {
         System.out.println("========================================");
-        System.out.println("QA Track - Configuracoes de Teste");
+        System.out.println("QA Track - Test Configurations");
         System.out.println("========================================");
         System.out.println("API_BASE_URL: " + API_BASE_URL);
         System.out.println("WEB_BASE_URL: " + WEB_BASE_URL);

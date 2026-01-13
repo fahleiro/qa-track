@@ -5,15 +5,15 @@ import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
 
 /**
- * Runner do Cucumber para execucao dos testes
+ * Cucumber Runner for test execution
  * QA Track - v1.0.0
  * 
- * Uso:
- *   mvn clean test                                    # Executa todos os testes
- *   mvn clean test -Dcucumber.filter.tags="@API"      # Apenas testes API
- *   mvn clean test -Dcucumber.filter.tags="@WEB"      # Apenas testes WEB
- *   mvn clean test -Dcucumber.filter.tags="@smoke"    # Apenas testes smoke
- *   HEADLESS=true mvn clean test                      # Modo headless (CI/CD)
+ * Usage:
+ *   mvn clean test                                    # Run all tests
+ *   mvn clean test -Dcucumber.filter.tags="@API"      # API tests only
+ *   mvn clean test -Dcucumber.filter.tags="@WEB"      # WEB tests only
+ *   mvn clean test -Dcucumber.filter.tags="@smoke"    # Smoke tests only
+ *   HEADLESS=true mvn clean test                      # Headless mode (CI/CD)
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(
