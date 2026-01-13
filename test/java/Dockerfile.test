@@ -1,0 +1,94 @@
+# ========================================
+# QA Track - Dockerfile para Testes
+# Imagem com Maven + Java 11 + Chrome Headless
+# ========================================
+
+# Imagem base: Maven com Java 11
+FROM maven:3.9-eclipse-temurin-11
+
+# Informacoes do mantenedor
+LABEL maintainer="QA Track Team"
+LABEL description="Imagem para execucao de testes automatizados QA Track"
+
+# Variaveis de ambiente
+ENV HEADLESS=true
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instalar dependencias do Chrome
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    ca-certificates \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libatspi2.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    xdg-utils \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# Adicionar repositorio do Google Chrome
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-signing-key.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-key.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+
+# Instalar Google Chrome
+RUN apt-get update && apt-get install -y \
+    google-chrome-stable \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verificar instalacao do Chrome
+RUN google-chrome --version
+
+# Diretorio de trabalho
+WORKDIR /app/tests
+
+# Copiar arquivos de dependencias primeiro (para cache)
+COPY pom.xml .
+
+# Baixar dependencias (cache layer)
+RUN mvn dependency:go-offline -B
+
+# Copiar codigo fonte dos testes
+COPY src/ ./src/
+
+# Criar diretorio de reports
+RUN mkdir -p reports
+
+# Comando padrao: executar todos os testes
+CMD ["mvn", "clean", "test"]
+
+# ========================================
+# Uso:
+# ========================================
+# Build da imagem:
+#   docker build -f Dockerfile.test -t qa-track-tests .
+#
+# Executar todos os testes:
+#   docker run --rm qa-track-tests
+#
+# Executar apenas testes API:
+#   docker run --rm qa-track-tests mvn clean test -Dcucumber.filter.tags="@API"
+#
+# Executar apenas testes WEB:
+#   docker run --rm qa-track-tests mvn clean test -Dcucumber.filter.tags="@WEB"
+#
+# Com variaveis de ambiente customizadas:
+#   docker run --rm \
+#     -e API_BASE_URL=http://host.docker.internal:3000 \
+#     -e WEB_BASE_URL=http://host.docker.internal:5174 \
+#     qa-track-tests
+# ========================================
