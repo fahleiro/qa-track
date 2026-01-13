@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
+import Home from './pages/Home'
 import Scenarios from './pages/Scenarios'
 import Config from './pages/Config'
 import './styles/App.css'
@@ -10,7 +11,8 @@ function App() {
         <Header />
         <main className="main">
           <Routes>
-            <Route path="/" element={<Scenarios />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/scenario" element={<Scenarios />} />
             <Route path="/config" element={<Config />} />
           </Routes>
         </main>
@@ -24,9 +26,9 @@ function Header() {
   
   return (
     <header className="header">
-      <div className="header-brand">QA Track</div>
+      <Link to="/" className="header-brand">QA Track</Link>
       <nav className="header-nav">
-        <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+        <Link to="/scenario" className={location.pathname === '/scenario' ? 'active' : ''}>
           Cenários
         </Link>
         <Link to="/config" className={location.pathname === '/config' ? 'active' : ''}>
