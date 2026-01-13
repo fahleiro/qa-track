@@ -6,12 +6,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.And;
 
-/**
- * Step Definitions for WEB tests - System
- * Only maps steps to Interactions calls
- * QA Track - v1.0.0
- */
-public class SystemWEBSteps {
+public class SystemSteps {
 
     private final SystemInteractions webInteractions = new SystemInteractions();
 

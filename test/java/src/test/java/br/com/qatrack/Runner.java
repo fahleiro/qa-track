@@ -4,12 +4,13 @@ import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
 
+
 @RunWith(Cucumber.class)
 @CucumberOptions(
         features = "src/test/resources/features",
         glue = {
             "br.com.qatrack.steps",
-            "br.com.qatrack"
+            "br.com.qatrack.hooks"
         },
         plugin = {
             "pretty",

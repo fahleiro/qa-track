@@ -1,4 +1,4 @@
-package br.com.qatrack;
+package br.com.qatrack.hooks;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -9,6 +9,8 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+
+import br.com.qatrack.TestConfig;
 
 import java.time.Duration;
 
