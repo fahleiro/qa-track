@@ -1,6 +1,6 @@
-package br.com.qatrack.web.steps;
+package br.com.qatrack.steps;
 
-import br.com.qatrack.web.interactions.SystemWEBInteractions;
+import br.com.qatrack.interactions.SystemInteractions;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -13,7 +13,7 @@ import io.cucumber.java.en.And;
  */
 public class SystemWEBSteps {
 
-    private final SystemWEBInteractions webInteractions = new SystemWEBInteractions();
+    private final SystemInteractions webInteractions = new SystemInteractions();
 
     @Given("I am on the home page")
     public void iAmOnTheHomePage() {

@@ -1,10 +1,10 @@
 # language: en
 
-@WEB
-Feature: [WEB] System Management via Web Interface
+@System
+Feature: System
 
-  @WEB @smoke
-  Scenario: Create a new system via web interface
+  @CreateNewSystem
+  Scenario: Create new system
     Given I am on the home page
     When I navigate to the settings page
     And I click on the "Systems" tab

@@ -1,61 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="Cucumber" time="11.709" tests="2" skipped="0" failures="2" errors="0">
-<testcase classname="[API] /api/system" name="Listar todos os sistemas cadastrados" time="0.071">
-<failure type="java.lang.NullPointerException" message="Cannot invoke &quot;io.restassured.specification.RequestSpecification.get(String, Object[])&quot; because &quot;this.request&quot; is null">
-<![CDATA[java.lang.NullPointerException: Cannot invoke "io.restassured.specification.RequestSpecification.get(String, Object[])" because "this.request" is null
-	at br.com.qatrack.api.interactions.SystemInteractions.executarGET(SystemInteractions.java:38)
-	at br.com.qatrack.api.steps.SystemSteps.euFacoUmaRequisicaoGETPara(SystemSteps.java:24)
-	at ✽.eu faco uma requisicao GET para "/api/system"(file:///C:/Users/gabriel.faleiro/Downloads/github/qa-test-track-git/test/java/src/test/resources/features/api/System.feature:8)
-]]>
-</failure>
+<testsuite name="Cucumber" time="13.729" tests="1" skipped="0" failures="0" errors="0">
+<testcase classname="System" name="Create new system" time="12.962">
 <system-out><![CDATA[
-Given eu faco uma requisicao GET para "/api/system".........................failed
-Then o status code deve ser 200.............................................skipped
-And a resposta deve ser uma lista JSON......................................skipped
-]]></system-out>
-</testcase>
-<testcase classname="[WEB] Gerenciamento de Sistemas via Interface" name="Criar um novo sistema via interface web" time="11.149">
-<failure type="org.openqa.selenium.UnhandledAlertException" message="unexpected alert open: {Alert text : Sistema com esse título já existe}
-  (Session info: chrome=143.0.7499.193): Sistema com esse título já existe
-Build info: version: '4.15.0', revision: '1d14b5521b'
-System info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '21.0.8'
-Driver info: org.openqa.selenium.chrome.ChromeDriver
-Command: [0e25f437c123fd3c3899fceb5b5680d8, findElements {using=css selector, value=.list-item}]
-Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 143.0.7499.193, chrome: {chromedriverVersion: 143.0.7499.192 (be2c1f4fd45..., userDataDir: C:\Users\GABRIE~1.FAL\AppDa...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:50896}, goog:processID: 11088, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: windows, proxy: Proxy(), se:cdp: ws://localhost:50896/devtoo..., se:cdpVersion: 143.0.7499.193, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
-Session ID: 0e25f437c123fd3c3899fceb5b5680d8">
-<![CDATA[org.openqa.selenium.UnhandledAlertException: unexpected alert open: {Alert text : Sistema com esse título já existe}
-  (Session info: chrome=143.0.7499.193): Sistema com esse título já existe
-Build info: version: '4.15.0', revision: '1d14b5521b'
-System info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '21.0.8'
-Driver info: org.openqa.selenium.chrome.ChromeDriver
-Command: [0e25f437c123fd3c3899fceb5b5680d8, findElements {using=css selector, value=.list-item}]
-Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 143.0.7499.193, chrome: {chromedriverVersion: 143.0.7499.192 (be2c1f4fd45..., userDataDir: C:\Users\GABRIE~1.FAL\AppDa...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:50896}, goog:processID: 11088, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: windows, proxy: Proxy(), se:cdp: ws://localhost:50896/devtoo..., se:cdpVersion: 143.0.7499.193, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
-Session ID: 0e25f437c123fd3c3899fceb5b5680d8
-	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.decode(W3CHttpResponseCodec.java:131)
-	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.decode(W3CHttpResponseCodec.java:52)
-	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:191)
-	at org.openqa.selenium.remote.service.DriverCommandExecutor.invokeExecute(DriverCommandExecutor.java:200)
-	at org.openqa.selenium.remote.service.DriverCommandExecutor.execute(DriverCommandExecutor.java:175)
-	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:607)
-	at org.openqa.selenium.remote.ElementLocation$ElementFinder$2.findElements(ElementLocation.java:182)
-	at org.openqa.selenium.remote.ElementLocation.findElements(ElementLocation.java:103)
-	at org.openqa.selenium.remote.RemoteWebDriver.findElements(RemoteWebDriver.java:377)
-	at org.openqa.selenium.remote.RemoteWebDriver.findElements(RemoteWebDriver.java:371)
-	at br.com.qatrack.web.pages.BasePage.findElements(BasePage.java:132)
-	at br.com.qatrack.web.pages.ConfigPage.itemExisteNaLista(ConfigPage.java:85)
-	at br.com.qatrack.web.pages.ConfigPage.aguardarItemNaLista(ConfigPage.java:103)
-	at br.com.qatrack.web.interactions.SystemWEBInteractions.validarSistemaNaLista(SystemWEBInteractions.java:140)
-	at br.com.qatrack.web.steps.SystemWEBSteps.oSistemaDeveAparecerNaLista(SystemWEBSteps.java:57)
-	at ✽.o sistema "Sistema Teste Automatizado" deve aparecer na lista(file:///C:/Users/gabriel.faleiro/Downloads/github/qa-test-track-git/test/java/src/test/resources/features/web/system_web.feature:20)
-]]>
-</failure>
-<system-out><![CDATA[
-Dado que estou na pagina inicial............................................passed
-Quando eu navego para a pagina de configuracoes.............................passed
-E eu clico na aba "Sistemas"................................................passed
-E preencho o campo de sistema com "Sistema Teste Automatizado"..............passed
-E clico no botao "Adicionar"................................................passed
-Entao o sistema "Sistema Teste Automatizado" deve aparecer na lista.........failed
+Given I am on the home page.................................................passed
+When I navigate to the settings page........................................passed
+And I click on the "Systems" tab............................................passed
+And I fill in the system field with "Automated Test System".................passed
+And I click the "Add" button................................................passed
+Then the system "Automated Test System" should appear in the list...........passed
 ]]></system-out>
 </testcase>
 </testsuite>
