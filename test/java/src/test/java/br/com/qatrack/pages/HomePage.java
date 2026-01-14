@@ -15,6 +15,13 @@ public class HomePage extends BasePage {
         System.out.println("[WEB] Home page opened: " + getCurrentUrl());
     }
 
+    public void openScenariosPage() {
+        navigateTo("/scenario");
+        waitForPageLoad();
+        sleep(500);
+        System.out.println("[WEB] Scenarios page opened: " + getCurrentUrl());
+    }
+
     public void navigateToConfigPage() {
         click(MENU_SETTINGS);
         waitForPageLoad();

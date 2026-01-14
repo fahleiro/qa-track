@@ -1,11 +1,11 @@
-package br.com.qatrack;
+package br.com.qatrack.utils;
 
 /**
  * Centralized configurations for WEB automated tests
  */
 public class TestConfig {
 
-    public static final String WEB_BASE_URL = getEnvOrDefault("WEB_BASE_URL", "http://localhost:5174");
+    public static final String WEB_BASE_URL = getEnvOrDefault("WEB_BASE_URL", "http://localhost:5177");
 
 
     public static final int DEFAULT_TIMEOUT = 10;

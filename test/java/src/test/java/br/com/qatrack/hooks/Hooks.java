@@ -4,13 +4,16 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
-import br.com.qatrack.TestConfig;
+import br.com.qatrack.asserts.AssertHomePage;
+import br.com.qatrack.utils.TestConfig;
 
 import java.time.Duration;
 
@@ -44,6 +47,16 @@ public class Hooks {
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(TestConfig.PAGE_LOAD_TIMEOUT));
         
         System.out.println("[SETUP] WebDriver initialized successfully");
+        
+        driver.get(TestConfig.WEB_BASE_URL);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(TestConfig.DEFAULT_TIMEOUT));
+        wait.until(webDriver -> 
+            ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete")
+        );
+        System.out.println("[SETUP] Navigated to: " + TestConfig.WEB_BASE_URL);
+        
+        // Validate home page is loaded correctly
+        AssertHomePage.validateHomePageLoaded(driver);
     }
 
     @After()

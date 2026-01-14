@@ -1,47 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="Cucumber" time="10.515" tests="1" skipped="0" failures="1" errors="0">
-<testcase classname="System" name="Create new system" time="9.936">
-<failure type="org.openqa.selenium.UnhandledAlertException" message="unexpected alert open: {Alert text : Sistema com esse título já existe}
-  (Session info: chrome=143.0.7499.193): Sistema com esse título já existe
-Build info: version: '4.15.0', revision: '1d14b5521b'
-System info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '21.0.8'
-Driver info: org.openqa.selenium.chrome.ChromeDriver
-Command: [6f98f5052286b1930158f759b1f9f5d7, findElements {using=css selector, value=.list-item}]
-Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 143.0.7499.193, chrome: {chromedriverVersion: 143.0.7499.192 (be2c1f4fd45..., userDataDir: C:\Users\GABRIE~1.FAL\AppDa...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:58118}, goog:processID: 26556, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: windows, proxy: Proxy(), se:cdp: ws://localhost:58118/devtoo..., se:cdpVersion: 143.0.7499.193, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
-Session ID: 6f98f5052286b1930158f759b1f9f5d7">
-<![CDATA[org.openqa.selenium.UnhandledAlertException: unexpected alert open: {Alert text : Sistema com esse título já existe}
-  (Session info: chrome=143.0.7499.193): Sistema com esse título já existe
-Build info: version: '4.15.0', revision: '1d14b5521b'
-System info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '21.0.8'
-Driver info: org.openqa.selenium.chrome.ChromeDriver
-Command: [6f98f5052286b1930158f759b1f9f5d7, findElements {using=css selector, value=.list-item}]
-Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 143.0.7499.193, chrome: {chromedriverVersion: 143.0.7499.192 (be2c1f4fd45..., userDataDir: C:\Users\GABRIE~1.FAL\AppDa...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:58118}, goog:processID: 26556, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: windows, proxy: Proxy(), se:cdp: ws://localhost:58118/devtoo..., se:cdpVersion: 143.0.7499.193, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
-Session ID: 6f98f5052286b1930158f759b1f9f5d7
-	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.decode(W3CHttpResponseCodec.java:131)
-	at org.openqa.selenium.remote.codec.w3c.W3CHttpResponseCodec.decode(W3CHttpResponseCodec.java:52)
-	at org.openqa.selenium.remote.HttpCommandExecutor.execute(HttpCommandExecutor.java:191)
-	at org.openqa.selenium.remote.service.DriverCommandExecutor.invokeExecute(DriverCommandExecutor.java:200)
-	at org.openqa.selenium.remote.service.DriverCommandExecutor.execute(DriverCommandExecutor.java:175)
-	at org.openqa.selenium.remote.RemoteWebDriver.execute(RemoteWebDriver.java:607)
-	at org.openqa.selenium.remote.ElementLocation$ElementFinder$2.findElements(ElementLocation.java:182)
-	at org.openqa.selenium.remote.ElementLocation.findElements(ElementLocation.java:103)
-	at org.openqa.selenium.remote.RemoteWebDriver.findElements(RemoteWebDriver.java:377)
-	at org.openqa.selenium.remote.RemoteWebDriver.findElements(RemoteWebDriver.java:371)
-	at br.com.qatrack.pages.BasePage.findElements(BasePage.java:79)
-	at br.com.qatrack.pages.ConfigPage.itemExistsInList(ConfigPage.java:47)
-	at br.com.qatrack.pages.ConfigPage.waitForItemInList(ConfigPage.java:60)
-	at br.com.qatrack.interactions.SystemInteractions.validateSystemInList(SystemInteractions.java:92)
-	at br.com.qatrack.steps.SystemWEBSteps.theSystemShouldAppearInTheList(SystemWEBSteps.java:57)
-	at ✽.the system "Automated Test System" should appear in the list(file:///C:/Users/gabriel.faleiro/Downloads/github/qa-test-track-git/test/java/src/test/resources/features/System.feature:13)
-]]>
-</failure>
+<testsuite name="Cucumber" time="15.743" tests="1" skipped="0" failures="0" errors="0">
+<testcase classname="System" name="Create new system" time="14.971">
 <system-out><![CDATA[
 Given I am on the home page.................................................passed
 When I navigate to the settings page........................................passed
 And I click on the "Systems" tab............................................passed
 And I fill in the system field with "Automated Test System".................passed
 And I click the "Add" button................................................passed
-Then the system "Automated Test System" should appear in the list...........failed
+Then the system "Automated Test System" should appear in the list...........passed
 ]]></system-out>
 </testcase>
 </testsuite>

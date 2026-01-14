@@ -1,7 +1,7 @@
 package br.com.qatrack.pages;
 
-import br.com.qatrack.TestConfig;
 import br.com.qatrack.hooks.Hooks;
+import br.com.qatrack.utils.TestConfig;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;

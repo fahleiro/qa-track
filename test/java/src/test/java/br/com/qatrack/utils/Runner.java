@@ -1,4 +1,4 @@
-package br.com.qatrack;
+package br.com.qatrack.utils;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;
