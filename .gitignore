@@ -1,9 +1,6 @@
 # Dependencies
-node_modules/
-api/node_modules/
-api/package-lock.json
-painel/node_modules/
-painel/package-lock.json
+**/node_modules/
+**/package-lock.json
 
 # Build outputs
 frontend/dist/
@@ -16,7 +13,6 @@ yarn-error.log*
 *.log
 
 # Environment variables
-.env
 .env.local
 .env.*.local
 

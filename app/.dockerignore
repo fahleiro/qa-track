@@ -1,0 +1,23 @@
+# Dependências
+node_modules
+**/node_modules
+**/package-lock.json
+
+# Logs
+npm-debug.log
+*.log
+
+# Git
+.git
+.gitignore
+
+# Ambiente local
+.env
+.env.local
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Build
+interface/dist

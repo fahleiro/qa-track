@@ -1,0 +1,7 @@
+{
+    "host": "localhost",
+    "port": 5432,
+    "database": "qa_test_track",
+    "user": "postgres",
+    "password": "postgres"
+}

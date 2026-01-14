@@ -1,0 +1,19 @@
+{
+    "name": "qa-test-track-test",
+    "version": "1.0.0",
+    "description": "QA TRACK TESTS",
+    "main": "schema.test.js",
+    "scripts": {
+        "test:api": "node api/run-all-tests.js",
+        "test:web": "node web/run-all-tests.js",
+        "test:all": "npm run test:api && npm run test:web"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "pg": "^8.11.3",
+        "selenium-webdriver": "^4.27.0"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    }
+}
