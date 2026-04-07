@@ -15,9 +15,8 @@ QA Track is a Software Quality Management System (SQMS) for organizing and track
 
 - **Systems** — register and manage the systems under test
 - **Features** — link features to systems
-- **Scenarios** — create test scenarios with preconditions, expected results, and status
-- **Runs** — group scenarios into execution runs and track results per scenario
-- **Config** — manage custom statuses for scenarios and runs
+- **Scenarios** — create test scenarios with preconditions, expected results, and N:N system associations
+- **Config** — manage custom scenario statuses; export and import the full database
 
 ## Getting Started
 
@@ -56,7 +55,7 @@ Full API reference is documented in [`docs/version/v010.md`](docs/version/v010.m
 
 Base URL: `http://localhost:3000/api`
 
-Main resources: `/system`, `/feature`, `/scenario`, `/suite`, `/run`, `/result`, `/config/status/scenario`, `/config/status/run`
+Main resources: `/system`, `/feature`, `/scenario`, `/config/status/scenario`, `/config/export`, `/config/import`
 
 ## Documentation
 
