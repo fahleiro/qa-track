@@ -3,6 +3,7 @@ import { run as runFeature } from './02-feature.test'
 import { run as runScenario } from './03-scenario.test'
 import { run as runConfigStatus } from './04-config-status.test'
 import { run as runConfigExportImport } from './05-config-export-import.test'
+import { evidence } from '../shared/evidence'
 
 async function main(): Promise<void> {
   console.log('\n╔════════════════════════════════════════════╗')
@@ -20,6 +21,7 @@ async function main(): Promise<void> {
   const failed: string[] = []
 
   for (const suite of suites) {
+    evidence.setSuite(suite.name)
     try {
       await suite.fn()
     } catch (err) {
@@ -27,6 +29,8 @@ async function main(): Promise<void> {
       failed.push(suite.name)
     }
   }
+
+  evidence.save('evidence-api.json')
 
   console.log('\n' + '═'.repeat(44))
   if (failed.length === 0) {

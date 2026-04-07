@@ -88,6 +88,38 @@ jobs:
           docker exec ${{ env.APP_CONTAINER_NAME }} \
             bash -c "cd /app/tests && DB_HOST=localhost DB_NAME=qa_test_track DB_USER=postgres npm run test:db"
 
+      - name: Install Chromium for web tests
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} bash -c \
+            "apt-get update -qq && apt-get install -y -q chromium chromium-driver"
+
+      - name: Run web tests
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} bash -c \
+            "cd /app/tests && HEADLESS=true CHROME_BIN=/usr/bin/chromium QA_WEB_URL=http://localhost:5173 QA_API_URL=http://localhost:3000 DB_HOST=localhost DB_NAME=qa_test_track DB_USER=postgres npm run test:web"
+
+      - name: Generate PDF report
+        if: always()
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} bash -c \
+            "cd /app/tests && npm run report" || true
+
+      - name: Copy reports from container
+        if: always()
+        run: |
+          mkdir -p test-reports
+          docker cp ${{ env.APP_CONTAINER_NAME }}:/app/tests/reports/. test-reports/ 2>/dev/null || true
+
+      - name: Upload PDF report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-track-report
+          path: |
+            test-reports/qa-track-report.pdf
+            test-reports/screenshots/
+          retention-days: 30
+
       - name: Show container logs on failure
         if: failure()
         run: docker logs ${{ env.APP_CONTAINER_NAME }}
