@@ -1,4 +1,5 @@
-import { createDriver, navigateTo, fillInput, clickElement, waitForText, waitForTextGone, closeDriver, selectOptionByText, By, log, takeScreenshot } from './config/web-driver'
+import { createDriver, fillInput, clickElement, waitForText, waitForTextGone, closeDriver, selectOptionByText, By, log, takeScreenshot } from './config/web-driver'
+import { navigateViaMenu } from './config/nav-menu-helper'
 import { findFeatureByTitle, deleteFeatureByTitle, deleteSystemByTitle } from './config/db-helper'
 import { request } from '../shared/api-client'
 import { evidence } from '../shared/evidence'
@@ -37,7 +38,7 @@ async function testCreateFeature(): Promise<void> {
   log.section('WEB — Criar feature')
   await step('01_navegar_para_config', async () => {
     driver = await createDriver()
-    await navigateTo(driver, '/config')
+    await navigateViaMenu(driver, 'Configuração', 'Configuração')
   })
 
   await step('02_clicar_aba_features', async () => {

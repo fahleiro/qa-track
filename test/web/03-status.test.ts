@@ -1,4 +1,5 @@
-import { createDriver, navigateTo, fillInput, clickElement, waitForText, waitForTextGone, closeDriver, By, log, takeScreenshot } from './config/web-driver'
+import { createDriver, fillInput, clickElement, waitForText, waitForTextGone, closeDriver, By, log, takeScreenshot } from './config/web-driver'
+import { navigateViaMenu } from './config/nav-menu-helper'
 import { findStatusByTitle, deleteStatusByTitle } from './config/db-helper'
 import { evidence } from '../shared/evidence'
 import { WebDriver } from 'selenium-webdriver'
@@ -26,7 +27,7 @@ async function testCreateStatus(): Promise<void> {
   log.section('WEB — Criar status')
   await step('01_navegar_para_config', async () => {
     driver = await createDriver()
-    await navigateTo(driver, '/config')
+    await navigateViaMenu(driver, 'Configuração', 'Configuração')
   })
 
   await step('02_clicar_aba_status', async () => {

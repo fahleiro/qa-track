@@ -1,4 +1,5 @@
-import { createDriver, navigateTo, fillInput, clickElement, waitForText, waitForTextGone, closeDriver, By, log, takeScreenshot } from './config/web-driver'
+import { createDriver, fillInput, clickElement, waitForText, waitForTextGone, closeDriver, By, log, takeScreenshot } from './config/web-driver'
+import { navigateViaMenu } from './config/nav-menu-helper'
 import { findScenarioByTitle, deleteSystemByTitle, deleteFeatureByTitle, deleteStatusByTitle } from './config/db-helper'
 import { request } from '../shared/api-client'
 import { evidence } from '../shared/evidence'
@@ -35,7 +36,7 @@ async function testCreateScenario(): Promise<void> {
   log.section('WEB — Criar cenário')
   await step('01_navegar_para_cenarios', async () => {
     driver = await createDriver()
-    await navigateTo(driver, '/scenarios')
+    await navigateViaMenu(driver, 'Cenários', 'Cenários')
   })
 
   await step('02_abrir_modal_novo', async () => {
@@ -144,7 +145,7 @@ async function testFilterScenarios(): Promise<void> {
   log.section('WEB — Filtrar cenários')
 
   await step('13_navegar_para_cenarios_filtros', async () => {
-    await navigateTo(driver!, '/scenarios')
+    await navigateViaMenu(driver!, 'Cenários', 'Cenários')
     await waitForText(driver!, FILTER_SCENARIO_NAME)
   })
 
