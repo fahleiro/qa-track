@@ -1,4 +1,4 @@
-import { Client, ClientConfig } from 'pg'
+import { Client, ClientConfig, QueryResultRow } from 'pg'
 import { System, Feature, ScenarioStatus, Scenario, DbQueryResult } from '../../shared/types'
 
 const DB_CONFIG: ClientConfig = {
@@ -103,7 +103,7 @@ export async function deleteStatusByTitle(title: string): Promise<boolean> {
   }
 }
 
-export async function executeQuery<T = unknown>(query: string, params: unknown[] = []): Promise<T[]> {
+export async function executeQuery<T extends QueryResultRow = QueryResultRow>(query: string, params: unknown[] = []): Promise<T[]> {
   const client = await createConnection()
   try {
     const result = await client.query<T>(query, params)
