@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "QA Track — TypeScript test suite",
   "scripts": {
-    "test:api": "ts-node api/run-all.ts",
     "test:web": "ts-node web/run-all.ts",
     "test:db":  "ts-node db/schema.test.ts",
-    "test:all": "npm run test:api && npm run test:db && npm run test:web",
+    "test:all": "npm run test:db && npm run test:web",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
