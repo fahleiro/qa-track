@@ -11,7 +11,8 @@ let createdExpectId: number | null = null
 
 async function setup(): Promise<void> {
   log.section('SETUP')
-  let res = await request<System>('POST', '/api/system', { title: `TEST_SYS_SCN_${Date.now()}` })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let res: { status: number; data: any } = await request<System>('POST', '/api/system', { title: `TEST_SYS_SCN_${Date.now()}` })
   if (res.status === 201 && res.data?.id) createdSystemId = res.data.id
 
   res = await request<Feature>('POST', '/api/feature', {
@@ -29,7 +30,8 @@ async function setup(): Promise<void> {
 async function testScenarioCrud(): Promise<void> {
   log.section('SCENARIO — CRUD')
 
-  let res = await request<Scenario[]>('GET', '/api/scenario')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let res: { status: number; data: any } = await request<Scenario[]>('GET', '/api/scenario')
   res.status === 200 && Array.isArray(res.data)
     ? log.success(`GET /api/scenario → ${res.data!.length} cenários`)
     : log.error(`GET /api/scenario → esperado 200, recebido ${res.status}`)
@@ -92,7 +94,8 @@ async function testPreExpect(): Promise<void> {
     return
   }
 
-  let res = await request<Pre>('POST', `/api/scenario/${createdScenarioId}/pre`, { description: 'Pre via TS' })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let res: { status: number; data: any } = await request<Pre>('POST', `/api/scenario/${createdScenarioId}/pre`, { description: 'Pre via TS' })
   if (res.status === 201 && res.data?.id) {
     createdPreId = res.data.id
     log.success(`POST .../pre → ID ${createdPreId}`)

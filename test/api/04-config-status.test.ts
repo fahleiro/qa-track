@@ -7,7 +7,8 @@ let createdStatusId: number | null = null
 async function testConfigStatus(): Promise<void> {
   log.section('CONFIG STATUS — CRUD')
 
-  let res = await request<ScenarioStatus[]>('GET', '/api/config/status/scenario')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let res: { status: number; data: any } = await request<ScenarioStatus[]>('GET', '/api/config/status/scenario')
   res.status === 200 && Array.isArray(res.data)
     ? log.success(`GET /api/config/status/scenario → ${res.data!.length} status`)
     : log.error(`GET /api/config/status/scenario → esperado 200, recebido ${res.status}`)

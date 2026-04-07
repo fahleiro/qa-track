@@ -19,7 +19,8 @@ async function setup(): Promise<void> {
 async function testFeature(): Promise<void> {
   log.section('FEATURE — CRUD')
 
-  let res = await request<Feature[]>('GET', '/api/feature')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let res: { status: number; data: any } = await request<Feature[]>('GET', '/api/feature')
   res.status === 200 && Array.isArray(res.data)
     ? log.success(`GET /api/feature → ${res.data!.length} features`)
     : log.error(`GET /api/feature → esperado 200, recebido ${res.status}`)

@@ -8,7 +8,8 @@ let createdScenarioId: number | null = null
 async function testSystem(): Promise<void> {
   log.section('SYSTEM — CRUD')
 
-  let res = await request<System[]>('GET', '/api/system')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let res: { status: number; data: any } = await request<System[]>('GET', '/api/system')
   res.status === 200 && Array.isArray(res.data)
     ? log.success(`GET /api/system → ${res.data!.length} sistemas`)
     : log.error(`GET /api/system → esperado 200, recebido ${res.status}`)
@@ -58,7 +59,8 @@ async function testSystemScenarioAssociation(): Promise<void> {
   }
 
   // Criar cenário para associar
-  let res = await request<Scenario>('POST', '/api/scenario', {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let res: { status: number; data: any } = await request<Scenario>('POST', '/api/scenario', {
     title: `TEST_SCENARIO_FOR_SYS_${Date.now()}`,
     system_ids: [],
     prerequisites: ['Pre'],
