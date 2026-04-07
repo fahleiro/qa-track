@@ -7,17 +7,17 @@ export default function Scenarios() {
   const [features, setFeatures] = useState([])
   const [statuses, setStatuses] = useState([])
   const [loading, setLoading] = useState(true)
-  
+
   // Filtros
   const [search, setSearch] = useState('')
   const [filterSystem, setFilterSystem] = useState('')
   const [filterFeature, setFilterFeature] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
-  
+
   // Menu de opcoes
   const [menuOpen, setMenuOpen] = useState(null)
-  
-  // Modal
+
+  // Modal de cenário
   const [modal, setModal] = useState(false)
   const [editing, setEditing] = useState(null)
   const [viewMode, setViewMode] = useState(false)
@@ -33,6 +33,10 @@ export default function Scenarios() {
     prerequisites: [''],
     expectations: ['']
   })
+
+  // Modais de confirmação e alerta
+  const [confirmModal, setConfirmModal] = useState({ visible: false, message: '', onConfirm: null })
+  const [alertModal, setAlertModal] = useState({ visible: false, message: '' })
 
   useEffect(() => {
     loadData()
@@ -58,6 +62,24 @@ export default function Scenarios() {
     }
   }
 
+  // Modais utilitários
+  const showConfirm = (message, onConfirm) => {
+    setConfirmModal({ visible: true, message, onConfirm })
+  }
+
+  const handleConfirmOk = () => {
+    confirmModal.onConfirm?.()
+    setConfirmModal({ visible: false, message: '', onConfirm: null })
+  }
+
+  const handleConfirmCancel = () => {
+    setConfirmModal({ visible: false, message: '', onConfirm: null })
+  }
+
+  const showAlert = (message) => {
+    setAlertModal({ visible: true, message })
+  }
+
   // Filtrar cenários
   const filtered = scenarios.filter(s => {
     if (search && !s.title.toLowerCase().includes(search.toLowerCase()) && !s.id.toString().includes(search)) {
@@ -76,7 +98,7 @@ export default function Scenarios() {
   })
 
   // Features filtradas por sistema selecionado no filtro
-  const filteredFeatures = filterSystem 
+  const filteredFeatures = filterSystem
     ? features.filter(f => f.system_id === parseInt(filterSystem))
     : features
 
@@ -96,21 +118,23 @@ export default function Scenarios() {
   }, [menuOpen])
 
   // Modal handlers
+  const emptyForm = {
+    title: '',
+    feature_id: '',
+    status_id: '',
+    system_ids: [],
+    prerequisites: [''],
+    expectations: ['']
+  }
+
   const openCreate = () => {
     setEditing(null)
     setViewMode(false)
     setHasChanges(false)
     setOriginalPrerequisites([])
     setOriginalExpectations([])
-    setOriginalForm(null)
-    setForm({
-      title: '',
-      feature_id: '',
-      status_id: '',
-      system_ids: [],
-      prerequisites: [''],
-      expectations: ['']
-    })
+    setForm({ ...emptyForm })
+    setOriginalForm({ ...emptyForm }) // fix #14: detect changes in create mode
     setModal(true)
   }
 
@@ -126,11 +150,11 @@ export default function Scenarios() {
       feature_id: scenario.feature_id || '',
       status_id: scenario.status_id || '',
       system_ids: scenario.systems?.map(s => s.id) || [],
-      prerequisites: scenario.prerequisites?.length > 0 
-        ? scenario.prerequisites.map(p => p.description) 
+      prerequisites: scenario.prerequisites?.length > 0
+        ? scenario.prerequisites.map(p => p.description)
         : [''],
-      expectations: scenario.expectations?.length > 0 
-        ? scenario.expectations.map(e => e.description) 
+      expectations: scenario.expectations?.length > 0
+        ? scenario.expectations.map(e => e.description)
         : ['']
     }
     setForm(formData)
@@ -150,11 +174,11 @@ export default function Scenarios() {
       feature_id: scenario.feature_id || '',
       status_id: scenario.status_id || '',
       system_ids: scenario.systems?.map(s => s.id) || [],
-      prerequisites: scenario.prerequisites?.length > 0 
-        ? scenario.prerequisites.map(p => p.description) 
+      prerequisites: scenario.prerequisites?.length > 0
+        ? scenario.prerequisites.map(p => p.description)
         : [''],
-      expectations: scenario.expectations?.length > 0 
-        ? scenario.expectations.map(e => e.description) 
+      expectations: scenario.expectations?.length > 0
+        ? scenario.expectations.map(e => e.description)
         : ['']
     }
     setForm(formData)
@@ -162,12 +186,7 @@ export default function Scenarios() {
     setModal(true)
   }
 
-  const closeModal = () => {
-    if (hasChanges && !viewMode) {
-      if (!confirm('Há edições realizadas não salvas. Deseja Cancelar?')) {
-        return
-      }
-    }
+  const forceCloseModal = () => {
     setModal(false)
     setEditing(null)
     setViewMode(false)
@@ -175,6 +194,14 @@ export default function Scenarios() {
     setOriginalPrerequisites([])
     setOriginalExpectations([])
     setOriginalForm(null)
+  }
+
+  const closeModal = () => {
+    if (hasChanges && !viewMode) {
+      showConfirm('Há edições realizadas não salvas. Deseja Cancelar?', forceCloseModal)
+      return
+    }
+    forceCloseModal()
   }
 
   // Detectar alteracoes
@@ -185,18 +212,17 @@ export default function Scenarios() {
 
   const handleSave = async () => {
     if (!form.title.trim()) return
-    
+
     const prereqs = form.prerequisites.filter(p => p.trim())
     const expects = form.expectations.filter(e => e.trim())
-    
+
     if (prereqs.length === 0 || expects.length === 0) {
-      alert('Preencha ao menos um pré-requisito e um resultado esperado')
+      showAlert('Preencha ao menos um pré-requisito e um resultado esperado')
       return
     }
 
     try {
       if (editing) {
-        // Atualizar dados básicos do cenário
         await scenariosAPI.update(editing.id, {
           title: form.title.trim(),
           feature_id: form.feature_id || null,
@@ -204,22 +230,16 @@ export default function Scenarios() {
           system_ids: form.system_ids
         })
 
-        // Atualizar pré-requisitos
-        // Deletar os removidos
         for (const original of originalPrerequisites) {
           await scenariosAPI.deletePre(original.id)
         }
-        // Adicionar os novos
         for (const pre of prereqs) {
           await scenariosAPI.addPre(editing.id, pre)
         }
 
-        // Atualizar resultados esperados
-        // Deletar os removidos
         for (const original of originalExpectations) {
           await scenariosAPI.deleteExpect(original.id)
         }
-        // Adicionar os novos
         for (const exp of expects) {
           await scenariosAPI.addExpect(editing.id, exp)
         }
@@ -233,22 +253,23 @@ export default function Scenarios() {
           expectations: expects
         })
       }
-      closeModal()
+      forceCloseModal() // fix #6: bypass hasChanges check after save
       loadData()
     } catch (err) {
-      alert(err.message)
+      showAlert(err.message)
     }
   }
 
   const handleDelete = async (id, e) => {
     e.stopPropagation()
-    if (!confirm('Excluir este cenário?')) return
-    try {
-      await scenariosAPI.delete(id)
-      loadData()
-    } catch (err) {
-      alert(err.message)
-    }
+    showConfirm('Excluir este cenário?', async () => {
+      try {
+        await scenariosAPI.delete(id)
+        loadData()
+      } catch (err) {
+        showAlert(err.message)
+      }
+    })
   }
 
   const addField = (field) => {
@@ -314,7 +335,7 @@ export default function Scenarios() {
 
       {/* Filters */}
       <div className="filters">
-        <select 
+        <select
           className="filter-select"
           value={filterSystem}
           onChange={(e) => {
@@ -328,7 +349,7 @@ export default function Scenarios() {
           ))}
         </select>
 
-        <select 
+        <select
           className="filter-select"
           value={filterFeature}
           onChange={(e) => setFilterFeature(e.target.value)}
@@ -339,7 +360,7 @@ export default function Scenarios() {
           ))}
         </select>
 
-        <select 
+        <select
           className="filter-select"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
@@ -351,7 +372,7 @@ export default function Scenarios() {
         </select>
 
         {(search || filterSystem || filterFeature || filterStatus) && (
-          <button 
+          <button
             className="btn btn-ghost btn-sm"
             onClick={() => {
               setSearch('')
@@ -416,7 +437,7 @@ export default function Scenarios() {
                     </div>
                   </div>
                   <div className="list-item-actions">
-                    <button 
+                    <button
                       className="btn btn-ghost btn-icon"
                       onClick={(e) => handleDelete(scenario.id, e)}
                     >
@@ -440,7 +461,7 @@ export default function Scenarios() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal de Cenário */}
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -450,7 +471,7 @@ export default function Scenarios() {
               </h2>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
-            
+
             <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Título {!viewMode && '*'}</label>
@@ -597,7 +618,41 @@ export default function Scenarios() {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação */}
+      {confirmModal.visible && (
+        <div className="modal-overlay" onClick={handleConfirmCancel}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Confirmação</h2>
+            </div>
+            <div className="modal-body">
+              {confirmModal.message}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={handleConfirmCancel}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleConfirmOk}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Alerta */}
+      {alertModal.visible && (
+        <div className="modal-overlay" onClick={() => setAlertModal({ visible: false, message: '' })}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Aviso</h2>
+            </div>
+            <div className="modal-body">
+              {alertModal.message}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-primary" onClick={() => setAlertModal({ visible: false, message: '' })}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-
