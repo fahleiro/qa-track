@@ -1,0 +1,88 @@
+name: Tests
+
+on:
+  push:
+    branches: ['**']
+
+jobs:
+  api-and-db:
+    name: API + DB Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: qa_test_track
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: |
+            app/api/package.json
+            test/package.json
+
+      - name: Install API dependencies
+        working-directory: app/api
+        run: npm install
+
+      - name: Init database schema
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d qa_test_track -f app/db/01_create_tables.sql
+
+      - name: Start API
+        working-directory: app/api
+        env:
+          PORT: 3000
+          POSTGRES_HOST: localhost
+          POSTGRES_DATABASE: qa_test_track
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          P_POSTGRES: 5432
+        run: node server.js &
+
+      - name: Wait for API
+        run: |
+          for i in $(seq 1 10); do
+            curl -sf http://localhost:3000/api/system && break
+            echo "Waiting... ($i)"
+            sleep 2
+          done
+
+      - name: Install test dependencies
+        working-directory: test
+        run: npm install
+
+      - name: Typecheck
+        working-directory: test
+        run: npm run typecheck
+
+      - name: Run API tests
+        working-directory: test
+        env:
+          QA_API_URL: http://localhost:3000
+        run: npm run test:api
+
+      - name: Run DB schema tests
+        working-directory: test
+        env:
+          DB_HOST: localhost
+          DB_NAME: qa_test_track
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          P_POSTGRES: 5432
+        run: npm run test:db
