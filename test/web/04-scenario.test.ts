@@ -1,12 +1,21 @@
 import { createDriver, navigateTo, fillInput, clickElement, waitForText, waitForTextGone, closeDriver, By, log, takeScreenshot } from './config/web-driver'
-import { findScenarioByTitle } from './config/db-helper'
+import { findScenarioByTitle, deleteSystemByTitle, deleteFeatureByTitle, deleteStatusByTitle } from './config/db-helper'
+import { request } from '../shared/api-client'
 import { evidence } from '../shared/evidence'
+import { System, Feature, ScenarioStatus, Scenario } from '../shared/types'
 import { WebDriver } from 'selenium-webdriver'
 
 const SUITE = '04-scenario'
 const TEST_NAME = `TEST_SCN_WEB_${Date.now()}`
 const TEST_NAME_EDITED = `${TEST_NAME}_EDIT`
+
+const FILTER_SYSTEM_NAME  = `TEST_SYS_FILTER_${Date.now()}`
+const FILTER_FEATURE_NAME = `TEST_FEAT_FILTER_${Date.now()}`
+const FILTER_STATUS_NAME  = `TEST_STS_FILTER_${Date.now()}`
+const FILTER_SCENARIO_NAME = `TEST_SCN_FILTER_${Date.now()}`
+
 let driver: WebDriver | null = null
+let filterScenarioId: number | null = null
 
 async function step(name: string, fn: () => Promise<void>): Promise<void> {
   try {
@@ -101,12 +110,98 @@ async function testDeleteScenario(): Promise<void> {
   })
 }
 
+async function setupFilter(): Promise<void> {
+  log.section('SETUP — criar dados para filtro via API')
+  const sysRes = await request<System>('POST', '/api/system', { title: FILTER_SYSTEM_NAME })
+  const systemId = sysRes.data?.id
+  if (!systemId) throw new Error('Falha ao criar sistema de filtro')
+  log.info(`Sistema de filtro criado (ID ${systemId})`)
+
+  const featRes = await request<Feature>('POST', '/api/feature', { title: FILTER_FEATURE_NAME, system_id: systemId })
+  const featureId = featRes.data?.id
+  if (!featureId) throw new Error('Falha ao criar feature de filtro')
+  log.info(`Feature de filtro criada (ID ${featureId})`)
+
+  const stRes = await request<ScenarioStatus>('POST', '/api/config/status/scenario', { title: FILTER_STATUS_NAME })
+  const statusId = stRes.data?.id
+  if (!statusId) throw new Error('Falha ao criar status de filtro')
+  log.info(`Status de filtro criado (ID ${statusId})`)
+
+  const scRes = await request<Scenario>('POST', '/api/scenario', {
+    title: FILTER_SCENARIO_NAME,
+    system_ids: [systemId],
+    feature_id: featureId,
+    status_id: statusId,
+    prerequisites: ['Pré-requisito de filtro'],
+    expectations: ['Resultado esperado de filtro'],
+  })
+  filterScenarioId = scRes.data?.id ?? null
+  if (!filterScenarioId) throw new Error('Falha ao criar cenário de filtro')
+  log.info(`Cenário de filtro criado (ID ${filterScenarioId})`)
+}
+
+async function testFilterScenarios(): Promise<void> {
+  log.section('WEB — Filtrar cenários')
+
+  await step('13_navegar_para_cenarios_filtros', async () => {
+    await navigateTo(driver!, '/scenarios')
+    await waitForText(driver!, FILTER_SCENARIO_NAME)
+  })
+
+  await step('14_filtrar_por_sistema', async () => {
+    const selects = await driver!.findElements(By.css('.filter-select'))
+    await selects[0].findElement(By.xpath(`./option[contains(text(), "${FILTER_SYSTEM_NAME}")]`)).click()
+    await driver!.sleep(500)
+    await waitForText(driver!, FILTER_SCENARIO_NAME)
+  })
+
+  await step('15_limpar_filtro_sistema', async () => {
+    await clickElement(driver!, By.xpath('//button[contains(text(),"Limpar")]'))
+    await driver!.sleep(300)
+  })
+
+  await step('16_filtrar_por_feature', async () => {
+    const selects = await driver!.findElements(By.css('.filter-select'))
+    await selects[1].findElement(By.xpath(`./option[contains(text(), "${FILTER_FEATURE_NAME}")]`)).click()
+    await driver!.sleep(500)
+    await waitForText(driver!, FILTER_SCENARIO_NAME)
+  })
+
+  await step('17_limpar_filtro_feature', async () => {
+    await clickElement(driver!, By.xpath('//button[contains(text(),"Limpar")]'))
+    await driver!.sleep(300)
+  })
+
+  await step('18_filtrar_por_status', async () => {
+    const selects = await driver!.findElements(By.css('.filter-select'))
+    await selects[2].findElement(By.xpath(`./option[contains(text(), "${FILTER_STATUS_NAME}")]`)).click()
+    await driver!.sleep(500)
+    await waitForText(driver!, FILTER_SCENARIO_NAME)
+  })
+
+  await step('19_limpar_todos_filtros', async () => {
+    await clickElement(driver!, By.xpath('//button[contains(text(),"Limpar")]'))
+    await driver!.sleep(300)
+    await waitForText(driver!, FILTER_SCENARIO_NAME)
+  })
+}
+
+async function cleanupFilter(): Promise<void> {
+  if (filterScenarioId) {
+    await request('DELETE', `/api/scenario/${filterScenarioId}`).catch(() => {})
+  }
+  await deleteFeatureByTitle(FILTER_FEATURE_NAME).catch(() => {})
+  await deleteSystemByTitle(FILTER_SYSTEM_NAME).catch(() => {})
+  await deleteStatusByTitle(FILTER_STATUS_NAME).catch(() => {})
+}
+
 async function cleanup(): Promise<void> {
   log.section('CLEANUP')
   if (driver) {
     await closeDriver(driver)
     driver = null
   }
+  await cleanupFilter()
   log.info('Cleanup concluído')
 }
 
@@ -119,6 +214,8 @@ export async function run(): Promise<void> {
     await testValidateDb()
     await testEditScenario()
     await testDeleteScenario()
+    await setupFilter()
+    await testFilterScenarios()
   } finally {
     await cleanup()
   }
