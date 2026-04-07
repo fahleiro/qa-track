@@ -7,7 +7,7 @@ export default function Config() {
   const [features, setFeatures] = useState([])
   const [statuses, setStatuses] = useState([])
   const [loading, setLoading] = useState(true)
-  
+
   // Inputs de criacao
   const [systemInput, setSystemInput] = useState('')
   const [featureInput, setFeatureInput] = useState('')
@@ -34,6 +34,10 @@ export default function Config() {
   const [importError, setImportError] = useState(null)
   const fileInputRef = useRef(null)
 
+  // Modais de confirmação e alerta
+  const [confirmModal, setConfirmModal] = useState({ visible: false, message: '', onConfirm: null })
+  const [alertModal, setAlertModal] = useState({ visible: false, message: '' })
+
   useEffect(() => {
     loadData()
   }, [])
@@ -54,6 +58,24 @@ export default function Config() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Modais utilitários
+  const showConfirm = (message, onConfirm) => {
+    setConfirmModal({ visible: true, message, onConfirm })
+  }
+
+  const handleConfirmOk = () => {
+    confirmModal.onConfirm?.()
+    setConfirmModal({ visible: false, message: '', onConfirm: null })
+  }
+
+  const handleConfirmCancel = () => {
+    setConfirmModal({ visible: false, message: '', onConfirm: null })
+  }
+
+  const showAlert = (message) => {
+    setAlertModal({ visible: true, message })
   }
 
   // === MENU DE OPCOES ===
@@ -113,18 +135,21 @@ export default function Config() {
     setModal(true)
   }
 
-  const closeModal = () => {
-    if (hasChanges && !viewMode) {
-      if (!confirm('Há edições realizadas não salvas. Deseja Cancelar?')) {
-        return
-      }
-    }
+  const forceCloseModal = () => {
     setModal(false)
     setEditing(null)
     setEditType('')
     setViewMode(false)
     setHasChanges(false)
     setOriginalForm(null)
+  }
+
+  const closeModal = () => {
+    if (hasChanges && !viewMode) {
+      showConfirm('Há edições realizadas não salvas. Deseja Cancelar?', forceCloseModal)
+      return
+    }
+    forceCloseModal()
   }
 
   const checkChanges = (newForm) => {
@@ -152,10 +177,10 @@ export default function Config() {
       } else if (editType === 'status') {
         await statusAPI.update(editing.id, { title: editForm.title.trim() })
       }
-      closeModal()
+      forceCloseModal() // fix #6: bypass hasChanges check after save
       loadData()
     } catch (err) {
-      alert(err.message)
+      showAlert(err.message)
     }
   }
 
@@ -167,18 +192,19 @@ export default function Config() {
       setSystemInput('')
       loadData()
     } catch (err) {
-      alert(err.message)
+      showAlert(err.message)
     }
   }
 
   const deleteSystem = async (id) => {
-    if (!confirm('Excluir este sistema?')) return
-    try {
-      await systemsAPI.delete(id)
-      loadData()
-    } catch (err) {
-      alert(err.message)
-    }
+    showConfirm('Excluir este sistema?', async () => {
+      try {
+        await systemsAPI.delete(id)
+        loadData()
+      } catch (err) {
+        showAlert(err.message)
+      }
+    })
   }
 
   // === FEATURES ===
@@ -190,18 +216,19 @@ export default function Config() {
       setFeatureSystemId('')
       loadData()
     } catch (err) {
-      alert(err.message)
+      showAlert(err.message)
     }
   }
 
   const deleteFeature = async (id) => {
-    if (!confirm('Excluir esta feature?')) return
-    try {
-      await featuresAPI.delete(id)
-      loadData()
-    } catch (err) {
-      alert(err.message)
-    }
+    showConfirm('Excluir esta feature?', async () => {
+      try {
+        await featuresAPI.delete(id)
+        loadData()
+      } catch (err) {
+        showAlert(err.message)
+      }
+    })
   }
 
   // === STATUS ===
@@ -212,18 +239,19 @@ export default function Config() {
       setStatusInput('')
       loadData()
     } catch (err) {
-      alert(err.message)
+      showAlert(err.message)
     }
   }
 
   const deleteStatus = async (id) => {
-    if (!confirm('Excluir este status?')) return
-    try {
-      await statusAPI.delete(id)
-      loadData()
-    } catch (err) {
-      alert(err.message)
-    }
+    showConfirm('Excluir este status?', async () => {
+      try {
+        await statusAPI.delete(id)
+        loadData()
+      } catch (err) {
+        showAlert(err.message)
+      }
+    })
   }
 
   const handleKeyPress = (e, action) => {
@@ -243,7 +271,7 @@ export default function Config() {
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (err) {
-      alert('Erro ao exportar: ' + err.message)
+      showAlert('Erro ao exportar: ' + err.message)
     }
   }
 
@@ -266,13 +294,11 @@ export default function Config() {
     const file = e.target.files[0]
     if (!file) return
 
-    // Validar tipo de arquivo
     if (!file.name.endsWith('.json')) {
       setImportError('Apenas arquivos .json são permitidos')
       return
     }
 
-    // Validar tamanho (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setImportError('Arquivo muito grande. Máximo permitido: 10MB')
       return
@@ -285,7 +311,7 @@ export default function Config() {
     try {
       const text = await file.text()
       let jsonData
-      
+
       try {
         jsonData = JSON.parse(text)
       } catch {
@@ -296,7 +322,7 @@ export default function Config() {
 
       const result = await configAPI.import(jsonData)
       setImportResult(result)
-      loadData() // Recarregar dados após importação
+      loadData()
     } catch (err) {
       setImportError(err.message)
     } finally {
@@ -321,19 +347,19 @@ export default function Config() {
 
       {/* Tabs */}
       <div className="tabs">
-        <button 
+        <button
           className={`tab ${tab === 'systems' ? 'active' : ''}`}
           onClick={() => setTab('systems')}
         >
           Sistemas
         </button>
-        <button 
+        <button
           className={`tab ${tab === 'features' ? 'active' : ''}`}
           onClick={() => setTab('features')}
         >
           Features
         </button>
-        <button 
+        <button
           className={`tab ${tab === 'status' ? 'active' : ''}`}
           onClick={() => setTab('status')}
         >
@@ -359,7 +385,7 @@ export default function Config() {
                   onKeyPress={(e) => handleKeyPress(e, createSystem)}
                   placeholder="Nome do sistema"
                 />
-                <button 
+                <button
                   className="btn btn-primary"
                   onClick={createSystem}
                   disabled={!systemInput.trim()}
@@ -389,7 +415,7 @@ export default function Config() {
                           </div>
                         </div>
                         <div className="list-item-actions">
-                          <button 
+                          <button
                             className="btn btn-ghost btn-icon"
                             onClick={(e) => { e.stopPropagation(); deleteSystem(sys.id) }}
                           >
@@ -438,7 +464,7 @@ export default function Config() {
                     <option key={s.id} value={s.id}>{s.title}</option>
                   ))}
                 </select>
-                <button 
+                <button
                   className="btn btn-primary"
                   onClick={createFeature}
                   disabled={!featureInput.trim() || !featureSystemId}
@@ -471,7 +497,7 @@ export default function Config() {
                           </div>
                         </div>
                         <div className="list-item-actions">
-                          <button 
+                          <button
                             className="btn btn-ghost btn-icon"
                             onClick={(e) => { e.stopPropagation(); deleteFeature(feat.id) }}
                           >
@@ -508,7 +534,7 @@ export default function Config() {
                   onKeyPress={(e) => handleKeyPress(e, createStatus)}
                   placeholder="Nome do status"
                 />
-                <button 
+                <button
                   className="btn btn-primary"
                   onClick={createStatus}
                   disabled={!statusInput.trim()}
@@ -538,7 +564,7 @@ export default function Config() {
                           </div>
                         </div>
                         <div className="list-item-actions">
-                          <button 
+                          <button
                             className="btn btn-ghost btn-icon"
                             onClick={(e) => { e.stopPropagation(); deleteStatus(st.id) }}
                           >
@@ -578,7 +604,7 @@ export default function Config() {
               </h2>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
-            
+
             <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Título {!viewMode && '*'}</label>
@@ -629,7 +655,7 @@ export default function Config() {
               <h2 className="modal-title">Importar Configuração</h2>
               <button className="modal-close" onClick={closeImportModal}>×</button>
             </div>
-            
+
             <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Arquivo JSON</label>
@@ -680,6 +706,41 @@ export default function Config() {
               <button className="btn btn-secondary" onClick={closeImportModal}>
                 Fechar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação */}
+      {confirmModal.visible && (
+        <div className="modal-overlay" onClick={handleConfirmCancel}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Confirmação</h2>
+            </div>
+            <div className="modal-body">
+              {confirmModal.message}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={handleConfirmCancel}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleConfirmOk}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Alerta */}
+      {alertModal.visible && (
+        <div className="modal-overlay" onClick={() => setAlertModal({ visible: false, message: '' })}>
+          <div className="modal confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Aviso</h2>
+            </div>
+            <div className="modal-body">
+              {alertModal.message}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-primary" onClick={() => setAlertModal({ visible: false, message: '' })}>OK</button>
             </div>
           </div>
         </div>

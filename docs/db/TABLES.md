@@ -1,79 +1,77 @@
 # Tables
-> QA Track DB tables documentation – v0.1.0
+> QA Track DB schema – v0.1.0
 
 ---
 
 ## t_system
-> Manages the systems to which scenarios and features belong.
+> Systems under test.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | SERIAL | PK | Unique system identifier |
-| title | TEXT | NOT NULL, UNIQUE | Unique system name |
+| id | SERIAL | PK | Auto-incremented identifier |
+| title | TEXT | NOT NULL, UNIQUE | System name |
 
 ---
 
 ## t_feature
-> Manages features linked to a system.
+> Features linked to a system.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | SERIAL | PK | Unique feature identifier |
-| title | TEXT | NOT NULL, UNIQUE | Unique feature name |
-| system_id | INTEGER | FK → t_system(id), NOT NULL | System to which the feature belongs |
+| id | SERIAL | PK | Auto-incremented identifier |
+| title | TEXT | NOT NULL, UNIQUE | Feature name |
+| system_id | INTEGER | FK → t_system(id), NOT NULL | Owning system |
 
 ---
 
 ## t_scenario_status
-> Possible statuses for test scenarios.
+> Custom statuses applied to scenarios (e.g. Active, Obsolete, Draft).
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | SERIAL | PK | Unique status identifier |
-| title | TEXT | NOT NULL, UNIQUE | Unique status name (e.g., Active, Inactive, Obsolete) |
+| id | SERIAL | PK | Auto-incremented identifier |
+| title | TEXT | NOT NULL, UNIQUE | Status label |
 
 ---
 
 ## t_scenario
-> Test scenarios registered in the system.
+> Test scenarios.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | SERIAL | PK | Unique scenario identifier |
-| title | TEXT | NOT NULL, UNIQUE | Unique scenario title |
-| status_id | INTEGER | FK → t_scenario_status(id) | Current scenario status |
-| feature_id | INTEGER | FK → t_feature(id) | Feature linked to the scenario |
+| id | SERIAL | PK | Auto-incremented identifier |
+| title | TEXT | NOT NULL, UNIQUE | Scenario title |
+| status_id | INTEGER | FK → t_scenario_status(id) | Current status |
+| feature_id | INTEGER | FK → t_feature(id) | Associated feature |
 
 ---
 
 ## t_scenario_system
-> N:N relationship table between scenarios and systems.
+> N:N association between scenarios and systems.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| scenario_id | INTEGER | FK → t_scenario(id), PK | Linked scenario |
-| system_id | INTEGER | FK → t_system(id), PK | Linked system |
+| scenario_id | INTEGER | FK → t_scenario(id), PK | Scenario |
+| system_id | INTEGER | FK → t_system(id), PK | System |
 
 ---
 
 ## t_scenario_pre
-> Preconditions for test scenarios.
+> Preconditions for a scenario.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | SERIAL | PK | Unique precondition identifier |
-| scenario_id | INTEGER | FK → t_scenario(id), NOT NULL | Scenario to which the precondition belongs |
-| description | TEXT | NOT NULL | Precondition description |
+| id | SERIAL | PK | Auto-incremented identifier |
+| scenario_id | INTEGER | FK → t_scenario(id), NOT NULL | Owning scenario |
+| description | TEXT | NOT NULL | Precondition text |
 
 ---
 
 ## t_scenario_expect
-> Expected results for test scenarios.
+> Expected results for a scenario.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | SERIAL | PK | Unique expected result identifier |
-| scenario_id | INTEGER | FK → t_scenario(id), NOT NULL | Scenario to which the expected result belongs |
-| description | TEXT | NOT NULL | Expected result description |
-
----
+| id | SERIAL | PK | Auto-incremented identifier |
+| scenario_id | INTEGER | FK → t_scenario(id), NOT NULL | Owning scenario |
+| description | TEXT | NOT NULL | Expected result text |

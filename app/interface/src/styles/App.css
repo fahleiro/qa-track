@@ -335,18 +335,18 @@ body {
 }
 
 .tag-system {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--accent-light);
+  color: var(--text-muted);
 }
 
 .tag-feature {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--accent-light);
+  color: var(--text-muted);
 }
 
 .tag-status {
-  background: #fef3c7;
-  color: #b45309;
+  background: var(--accent-light);
+  color: var(--text-muted);
 }
 
 /* ===== TABS ===== */
@@ -706,6 +706,21 @@ body {
   padding: 4px 12px;
   background: var(--accent-light);
   border-radius: 12px;
+}
+
+/* ===== CONFIRM / ALERT MODAL ===== */
+.confirm-modal {
+  max-width: 360px;
+}
+
+.confirm-modal .modal-body {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.confirm-modal .modal-footer {
+  gap: 8px;
 }
 
 /* ===== RESPONSIVE ===== */
