@@ -1,67 +1,99 @@
-name: Tests
+name: Docker Build & Test
 
 on:
   push:
     branches: ['**']
+  pull_request:
+    branches: ['**']
+  workflow_dispatch:
+
+env:
+  APP_IMAGE_NAME: qa-track-app
+  APP_CONTAINER_NAME: qa-track-app-container
+  API_PORT: 3000
+  WEB_PORT: 5173
+  POSTGRES_PORT: 5432
 
 jobs:
-  api-and-db:
-    name: API + DB Tests
+  build-and-test:
+    name: Build & Run Tests
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_DB: qa_test_track
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Application Docker Image
+        run: |
+          docker build \
+            -t ${{ env.APP_IMAGE_NAME }}:latest \
+            -f app/Dockerfile \
+            ./app
+
+      - name: Start Application Container
+        run: |
+          docker run -d \
+            --name ${{ env.APP_CONTAINER_NAME }} \
+            -p ${{ env.API_PORT }}:${{ env.API_PORT }} \
+            -p ${{ env.WEB_PORT }}:${{ env.WEB_PORT }} \
+            -p ${{ env.POSTGRES_PORT }}:${{ env.POSTGRES_PORT }} \
+            ${{ env.APP_IMAGE_NAME }}:latest
+
+      - name: Wait for Application to be Ready
+        run: |
+          MAX_ATTEMPTS=40
+          ATTEMPT=0
+          API_READY=false
+          DB_READY=false
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            if ! docker ps | grep -q ${{ env.APP_CONTAINER_NAME }}; then
+              echo "Container stopped unexpectedly"
+              docker logs ${{ env.APP_CONTAINER_NAME }}
+              exit 1
+            fi
+
+            if [ "$API_READY" = "false" ]; then
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ env.API_PORT }}/api/system 2>/dev/null)
+              if echo "$STATUS" | grep -q "200\|404"; then
+                echo "API ready (HTTP $STATUS)"
+                API_READY=true
+              fi
+            fi
+
+            if [ "$DB_READY" = "false" ]; then
+              if nc -z localhost ${{ env.POSTGRES_PORT }} 2>/dev/null; then
+                echo "PostgreSQL ready"
+                DB_READY=true
+              fi
+            fi
+
+            if [ "$API_READY" = "true" ] && [ "$DB_READY" = "true" ]; then
+              break
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS — API: $API_READY, DB: $DB_READY"
+            sleep 3
+          done
+
+          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+            echo "Application failed to start in time"
+            docker logs ${{ env.APP_CONTAINER_NAME }}
+            exit 1
+          fi
+
+          sleep 3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
-          cache-dependency-path: |
-            app/api/package.json
-            test/package.json
-
-      - name: Install API dependencies
-        working-directory: app/api
-        run: npm install
-
-      - name: Init database schema
-        env:
-          PGPASSWORD: postgres
-        run: psql -h localhost -U postgres -d qa_test_track -f app/db/01_create_tables.sql
-
-      - name: Start API
-        working-directory: app/api
-        env:
-          PORT: 3000
-          POSTGRES_HOST: localhost
-          POSTGRES_DATABASE: qa_test_track
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          P_POSTGRES: 5432
-        run: node server.js &
-
-      - name: Wait for API
-        run: |
-          for i in $(seq 1 10); do
-            curl -sf http://localhost:3000/api/system && break
-            echo "Waiting... ($i)"
-            sleep 2
-          done
+          cache-dependency-path: test/package.json
 
       - name: Install test dependencies
         working-directory: test
@@ -74,7 +106,7 @@ jobs:
       - name: Run API tests
         working-directory: test
         env:
-          QA_API_URL: http://localhost:3000
+          QA_API_URL: http://localhost:${{ env.API_PORT }}
         run: npm run test:api
 
       - name: Run DB schema tests
@@ -83,6 +115,17 @@ jobs:
           DB_HOST: localhost
           DB_NAME: qa_test_track
           DB_USER: postgres
-          DB_PASSWORD: postgres
-          P_POSTGRES: 5432
+          DB_PASSWORD: ''
+          P_POSTGRES: ${{ env.POSTGRES_PORT }}
         run: npm run test:db
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs ${{ env.APP_CONTAINER_NAME }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop ${{ env.APP_CONTAINER_NAME }} 2>/dev/null || true
+          docker rm ${{ env.APP_CONTAINER_NAME }} 2>/dev/null || true
+          docker rmi ${{ env.APP_IMAGE_NAME }}:latest 2>/dev/null || true
