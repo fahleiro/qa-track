@@ -10,9 +10,6 @@ on:
 env:
   APP_IMAGE_NAME: qa-track-app
   APP_CONTAINER_NAME: qa-track-app-container
-  API_PORT: 3000
-  WEB_PORT: 5173
-  POSTGRES_PORT: 5432
 
 jobs:
   build-and-test:
@@ -37,87 +34,59 @@ jobs:
         run: |
           docker run -d \
             --name ${{ env.APP_CONTAINER_NAME }} \
-            -p ${{ env.API_PORT }}:${{ env.API_PORT }} \
-            -p ${{ env.WEB_PORT }}:${{ env.WEB_PORT }} \
-            -p ${{ env.POSTGRES_PORT }}:${{ env.POSTGRES_PORT }} \
             ${{ env.APP_IMAGE_NAME }}:latest
 
       - name: Wait for Application to be Ready
         run: |
-          MAX_ATTEMPTS=40
-          ATTEMPT=0
-          API_READY=false
-          DB_READY=false
+          echo "Waiting 15s for container startup..."
+          sleep 15
 
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            if ! docker ps | grep -q ${{ env.APP_CONTAINER_NAME }}; then
-              echo "Container stopped unexpectedly"
-              docker logs ${{ env.APP_CONTAINER_NAME }}
-              exit 1
-            fi
-
-            if [ "$API_READY" = "false" ]; then
-              STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ env.API_PORT }}/api/system 2>/dev/null)
-              if echo "$STATUS" | grep -q "200\|404"; then
-                echo "API ready (HTTP $STATUS)"
-                API_READY=true
-              fi
-            fi
-
-            if [ "$DB_READY" = "false" ]; then
-              if nc -z localhost ${{ env.POSTGRES_PORT }} 2>/dev/null; then
-                echo "PostgreSQL ready"
-                DB_READY=true
-              fi
-            fi
-
-            if [ "$API_READY" = "true" ] && [ "$DB_READY" = "true" ]; then
-              break
-            fi
-
-            ATTEMPT=$((ATTEMPT + 1))
-            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS — API: $API_READY, DB: $DB_READY"
-            sleep 3
-          done
-
-          if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-            echo "Application failed to start in time"
+          if ! docker ps | grep -q ${{ env.APP_CONTAINER_NAME }}; then
+            echo "Container stopped unexpectedly"
             docker logs ${{ env.APP_CONTAINER_NAME }}
             exit 1
           fi
 
-          sleep 3
+          echo "Container is running. Waiting for API..."
+          for i in $(seq 1 30); do
+            if docker exec ${{ env.APP_CONTAINER_NAME }} \
+              node -e "fetch('http://localhost:3000/api/system').then(r=>process.exit(0)).catch(()=>process.exit(1))" 2>/dev/null; then
+              echo "API ready!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "API did not respond in time"
+              docker logs ${{ env.APP_CONTAINER_NAME }}
+              exit 1
+            fi
+            echo "Attempt $i/30..."
+            sleep 3
+          done
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'npm'
-          cache-dependency-path: test/package.json
+      - name: Copy test suite into container
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} mkdir -p /app/tests
+          docker cp test/. ${{ env.APP_CONTAINER_NAME }}:/app/tests/
 
       - name: Install test dependencies
-        working-directory: test
-        run: npm install
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} \
+            bash -c "cd /app/tests && npm install"
 
       - name: Typecheck
-        working-directory: test
-        run: npm run typecheck
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} \
+            bash -c "cd /app/tests && npm run typecheck"
 
       - name: Run API tests
-        working-directory: test
-        env:
-          QA_API_URL: http://localhost:${{ env.API_PORT }}
-        run: npm run test:api
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} \
+            bash -c "cd /app/tests && QA_API_URL=http://localhost:3000 npm run test:api"
 
       - name: Run DB schema tests
-        working-directory: test
-        env:
-          DB_HOST: localhost
-          DB_NAME: qa_test_track
-          DB_USER: postgres
-          DB_PASSWORD: ''
-          P_POSTGRES: ${{ env.POSTGRES_PORT }}
-        run: npm run test:db
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} \
+            bash -c "cd /app/tests && DB_HOST=localhost DB_NAME=qa_test_track DB_USER=postgres npm run test:db"
 
       - name: Show container logs on failure
         if: failure()
