@@ -1,5 +1,7 @@
 import { Builder, By, until, WebDriver, WebElement, Locator } from 'selenium-webdriver'
 import * as chrome from 'selenium-webdriver/chrome'
+import * as fs from 'fs'
+import * as path from 'path'
 
 export { By, until }
 
@@ -11,16 +13,24 @@ export interface DriverConfig {
 
 export const CONFIG: DriverConfig = {
   BASE_URL: process.env.QA_WEB_URL ?? 'http://localhost:5174',
-  TIMEOUT: 10000,
-  IMPLICIT_WAIT: 5000,
+  TIMEOUT: 15000,
+  IMPLICIT_WAIT: 8000,
 }
 
 export async function createDriver(): Promise<WebDriver> {
   const options = new chrome.Options()
-  if (process.env.HEADLESS === 'true') {
-    options.addArguments('--headless')
+  if (process.env.HEADLESS !== 'false') {
+    options.addArguments('--headless=new')
   }
-  options.addArguments('--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--window-size=1920,1080')
+  options.addArguments(
+    '--no-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--window-size=1920,1080',
+  )
+  if (process.env.CHROME_BIN) {
+    options.setChromeBinaryPath(process.env.CHROME_BIN)
+  }
 
   const driver = await new Builder().forBrowser('chrome').setChromeOptions(options).build()
   await driver.manage().setTimeouts({
@@ -33,7 +43,7 @@ export async function createDriver(): Promise<WebDriver> {
 
 export async function navigateTo(driver: WebDriver, path = ''): Promise<void> {
   await driver.get(`${CONFIG.BASE_URL}${path}`)
-  await driver.sleep(500)
+  await driver.sleep(800)
 }
 
 export async function waitForElement(driver: WebDriver, locator: Locator, timeout = CONFIG.TIMEOUT): Promise<WebElement> {
@@ -83,6 +93,13 @@ export async function waitForText(driver: WebDriver, text: string, timeout = CON
   }, timeout)
 }
 
+export async function waitForTextGone(driver: WebDriver, text: string, timeout = CONFIG.TIMEOUT): Promise<void> {
+  await driver.wait(async () => {
+    const body = await driver.findElement(By.tagName('body'))
+    return !(await body.getText()).includes(text)
+  }, timeout)
+}
+
 export async function waitForPageLoad(driver: WebDriver): Promise<void> {
   await driver.wait(async () => {
     const state = await driver.executeScript('return document.readyState')
@@ -95,6 +112,20 @@ export async function selectOptionByText(driver: WebDriver, locator: Locator, te
   await select.click()
   const option = await select.findElement(By.xpath(`./option[contains(text(), "${text}")]`))
   await option.click()
+}
+
+export async function takeScreenshot(driver: WebDriver, suite: string, step: string): Promise<string | null> {
+  try {
+    const screenshotsDir = path.resolve(__dirname, '../../reports/screenshots', suite)
+    if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir, { recursive: true })
+    const safe = step.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()
+    const filepath = path.join(screenshotsDir, `${safe}.png`)
+    const data = await driver.takeScreenshot()
+    fs.writeFileSync(filepath, data, 'base64')
+    return filepath
+  } catch {
+    return null
+  }
 }
 
 export async function closeDriver(driver: WebDriver): Promise<void> {

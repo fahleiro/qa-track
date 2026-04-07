@@ -2,6 +2,7 @@ import { run as runSystem } from './01-system.test'
 import { run as runFeature } from './02-feature.test'
 import { run as runStatus } from './03-status.test'
 import { run as runScenario } from './04-scenario.test'
+import { evidence } from '../shared/evidence'
 
 async function main(): Promise<void> {
   console.log('\n╔════════════════════════════════════════════╗')
@@ -18,6 +19,7 @@ async function main(): Promise<void> {
   const failed: string[] = []
 
   for (const suite of suites) {
+    evidence.setSuite(suite.name)
     try {
       await suite.fn()
     } catch (err) {
@@ -25,6 +27,8 @@ async function main(): Promise<void> {
       failed.push(suite.name)
     }
   }
+
+  evidence.save('evidence-web.json')
 
   console.log('\n' + '═'.repeat(44))
   if (failed.length === 0) {

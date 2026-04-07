@@ -1,5 +1,6 @@
 import { Client, ClientConfig } from 'pg'
 import { log } from '../shared/logger'
+import { evidence } from '../shared/evidence'
 
 const DB_CONFIG: ClientConfig = {
   host:     process.env.DB_HOST     ?? 'localhost',
@@ -113,25 +114,31 @@ async function validateTable(client: Client, tableName: string, spec: TableSpec)
 
   if (colResult.rows.length === 0) {
     log.error(`Tabela ${tableName} não encontrada`)
+    evidence.addDb({ table: tableName, check: 'tabela existe', passed: false })
     return
   }
+
+  evidence.addDb({ table: tableName, check: 'tabela existe', passed: true })
 
   for (const [colName, colSpec] of Object.entries(spec.columns)) {
     const col = colResult.rows.find(r => r.column_name === colName)
     if (!col) {
       log.error(`  Coluna "${colName}" não encontrada`)
+      evidence.addDb({ table: tableName, check: `coluna ${colName} existe`, passed: false })
       continue
     }
 
     const typeOk = col.data_type === colSpec.type || col.data_type.includes(colSpec.type.split(' ')[0])
     const nullOk = (col.is_nullable === 'NO') === !colSpec.nullable
+    const passed = typeOk && nullOk
 
-    if (typeOk && nullOk) {
+    if (passed) {
       log.success(`  ${colName}: ${col.data_type} / nullable=${col.is_nullable === 'YES'}`)
     } else {
       if (!typeOk) log.error(`  ${colName}: tipo esperado "${colSpec.type}", encontrado "${col.data_type}"`)
       if (!nullOk) log.error(`  ${colName}: nullable esperado ${colSpec.nullable}, encontrado ${col.is_nullable === 'YES'}`)
     }
+    evidence.addDb({ table: tableName, check: `coluna ${colName} (type+nullable)`, passed })
   }
 }
 
@@ -140,6 +147,7 @@ async function run(): Promise<void> {
   console.log('║   DB SCHEMA VALIDATION           ║')
   console.log('╚══════════════════════════════════╝')
 
+  evidence.setSuite('db-schema')
   const client = new Client(DB_CONFIG)
   await client.connect()
   log.success('Conectado ao PostgreSQL')
@@ -152,9 +160,12 @@ async function run(): Promise<void> {
     await client.end()
     log.info('Conexão encerrada')
   }
+
+  evidence.save('evidence-db.json')
 }
 
 run().catch(err => {
+  evidence.save('evidence-db.json')
   console.error('\x1b[31m✗ Schema test falhou:\x1b[0m', err.message)
   process.exit(1)
 })

@@ -1,0 +1,132 @@
+name: Docker Build & Test
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+  workflow_dispatch:
+
+env:
+  APP_IMAGE_NAME: qa-track-app
+  APP_CONTAINER_NAME: qa-track-app-container
+
+jobs:
+  build-and-test:
+    name: Build & Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Application Docker Image
+        run: |
+          docker build \
+            -t ${{ env.APP_IMAGE_NAME }}:latest \
+            -f app/Dockerfile \
+            ./app
+
+      - name: Start Application Container
+        run: |
+          docker run -d \
+            --name ${{ env.APP_CONTAINER_NAME }} \
+            ${{ env.APP_IMAGE_NAME }}:latest
+
+      - name: Wait for Application to be Ready
+        run: |
+          echo "Waiting 15s for container startup..."
+          sleep 15
+
+          if ! docker ps | grep -q ${{ env.APP_CONTAINER_NAME }}; then
+            echo "Container stopped unexpectedly"
+            docker logs ${{ env.APP_CONTAINER_NAME }}
+            exit 1
+          fi
+
+          echo "Container is running. Waiting for API..."
+          for i in $(seq 1 30); do
+            if docker exec ${{ env.APP_CONTAINER_NAME }} \
+              node -e "fetch('http://localhost:3000/api/system').then(r=>process.exit(0)).catch(()=>process.exit(1))" 2>/dev/null; then
+              echo "API ready!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "API did not respond in time"
+              docker logs ${{ env.APP_CONTAINER_NAME }}
+              exit 1
+            fi
+            echo "Attempt $i/30..."
+            sleep 3
+          done
+
+      - name: Copy test suite into container
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} mkdir -p /app/tests
+          docker cp test/. ${{ env.APP_CONTAINER_NAME }}:/app/tests/
+
+      - name: Install test dependencies
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} \
+            bash -c "cd /app/tests && npm install"
+
+      - name: Typecheck
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} \
+            bash -c "cd /app/tests && npm run typecheck"
+
+      - name: Run API tests
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} \
+            bash -c "cd /app/tests && QA_API_URL=http://localhost:3000 npm run test:api"
+
+      - name: Run DB schema tests
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} \
+            bash -c "cd /app/tests && DB_HOST=localhost DB_NAME=qa_test_track DB_USER=postgres npm run test:db"
+
+      - name: Install Chromium for web tests
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} bash -c \
+            "apt-get update -qq && apt-get install -y -q chromium chromium-driver"
+
+      - name: Run web tests
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} bash -c \
+            "cd /app/tests && HEADLESS=true CHROME_BIN=/usr/bin/chromium QA_WEB_URL=http://localhost:5173 QA_API_URL=http://localhost:3000 DB_HOST=localhost DB_NAME=qa_test_track DB_USER=postgres npm run test:web"
+
+      - name: Generate PDF report
+        if: always()
+        run: |
+          docker exec ${{ env.APP_CONTAINER_NAME }} bash -c \
+            "cd /app/tests && npm run report" || true
+
+      - name: Copy reports from container
+        if: always()
+        run: |
+          mkdir -p test-reports
+          docker cp ${{ env.APP_CONTAINER_NAME }}:/app/tests/reports/. test-reports/ 2>/dev/null || true
+
+      - name: Upload PDF report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-track-report
+          path: |
+            test-reports/qa-track-report.pdf
+            test-reports/screenshots/
+          retention-days: 30
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs ${{ env.APP_CONTAINER_NAME }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop ${{ env.APP_CONTAINER_NAME }} 2>/dev/null || true
+          docker rm ${{ env.APP_CONTAINER_NAME }} 2>/dev/null || true
+          docker rmi ${{ env.APP_IMAGE_NAME }}:latest 2>/dev/null || true
