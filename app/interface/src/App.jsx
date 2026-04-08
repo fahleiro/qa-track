@@ -3,6 +3,7 @@ import Home from './pages/Home'
 import Scenarios from './pages/Scenarios'
 import Config from './pages/Config'
 import Kanban from './pages/Kanban'
+import Runs from './pages/Runs'
 import './styles/App.css'
 
 function AppContent() {
@@ -17,6 +18,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/scenario" element={<Scenarios />} />
           <Route path="/kanban" element={<Kanban />} />
+          <Route path="/run" element={<Runs />} />
           <Route path="/config" element={<Config />} />
         </Routes>
       </main>
@@ -41,6 +43,9 @@ function Header() {
       <nav className="header-nav">
         <Link to="/kanban" className={location.pathname === '/kanban' ? 'active' : ''}>
           Kanban
+        </Link>
+        <Link to="/run" className={location.pathname === '/run' ? 'active' : ''}>
+          Runs
         </Link>
         <Link to="/scenario" className={location.pathname === '/scenario' ? 'active' : ''}>
           Cenários

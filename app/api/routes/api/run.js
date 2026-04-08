@@ -13,14 +13,18 @@ module.exports = (app, client) => {
                 SELECT rm.id, rm.title, rm.start_date, rm.end_date, rm.created_at,
                        rs.id AS status_id, rs.title AS status_title,
                        c.id AS card_id, c.title AS card_title,
+                       sys.id AS system_id, sys.title AS system_title,
+                       feat.id AS feature_id, feat.title AS feature_title,
                        COUNT(rd.id)::int AS scenario_count,
                        COUNT(CASE WHEN rres.title = 'Passed' THEN 1 END)::int AS passed_count
                 FROM t_run_master rm
                 JOIN t_run_status rs ON rs.id = rm.status_id
                 LEFT JOIN t_card c ON c.id = rm.card_id
+                LEFT JOIN t_system sys ON sys.id = c.system_id
+                LEFT JOIN t_feature feat ON feat.id = c.feature_id
                 LEFT JOIN t_run_detail rd ON rd.run_id = rm.id
                 LEFT JOIN t_result_status rres ON rres.id = rd.result_status_id
-                GROUP BY rm.id, rs.id, rs.title, c.id, c.title
+                GROUP BY rm.id, rs.id, rs.title, c.id, c.title, sys.id, sys.title, feat.id, feat.title
                 ORDER BY rm.created_at DESC
             `);
             res.json(result.rows);

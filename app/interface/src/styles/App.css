@@ -962,3 +962,259 @@ body {
     max-height: 100vh;
   }
 }
+
+/* ===== RUNS PAGE ===== */
+
+.runs-guide {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.runs-guide-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.runs-guide-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.runs-guide-statuses {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.runs-guide-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.runs-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.runs-filter-select {
+  width: auto;
+  min-width: 160px;
+  flex: 1;
+}
+
+.runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.run-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+
+.run-item:hover {
+  box-shadow: var(--shadow);
+}
+
+.run-item-expanded {
+  border-color: #d4d4d4;
+}
+
+.run-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  gap: 16px;
+  user-select: none;
+}
+
+.run-item-header:hover {
+  background: var(--accent-light);
+}
+
+.run-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.run-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.run-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.run-item-card {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.run-item-dates {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.run-item-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.run-item-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.run-item-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.run-progress-bar {
+  width: 80px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.run-progress-fill {
+  height: 100%;
+  background: #16a34a;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.run-expand-icon {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Run detail panel */
+.run-item-detail {
+  border-top: 1px solid var(--border);
+  padding: 16px;
+  background: #fafafa;
+}
+
+.run-detail-link {
+  margin-bottom: 12px;
+}
+
+.btn-link {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-link:hover {
+  color: var(--text);
+}
+
+.run-detail-loading,
+.run-detail-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+/* Scenarios table inside run detail */
+.run-scenarios-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.run-scenarios-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.run-scenario-row {
+  border-bottom: 1px solid var(--border);
+}
+
+.run-scenario-row:last-child {
+  border-bottom: none;
+}
+
+.run-scenario-row.run-scenario-passed {
+  background: #f0fdf4;
+}
+
+.run-scenario-row.run-scenario-failed {
+  background: #fef2f2;
+}
+
+.run-scenario-row.run-scenario-testing {
+  background: #eff6ff;
+}
+
+.run-scenario-title {
+  padding: 10px 12px;
+  color: var(--text);
+}
+
+.run-scenario-status {
+  padding: 8px 12px;
+  width: 180px;
+}
+
+.run-status-select {
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  width: 100%;
+}
+
+.run-status-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.run-saving {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
