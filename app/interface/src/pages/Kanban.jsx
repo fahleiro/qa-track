@@ -4,25 +4,32 @@ import { kanbanAPI, systemsAPI, featuresAPI } from '../services/api'
 const RUN_BADGE_CLASS = {
   planned: 'run-badge-planned',
   running: 'run-badge-running',
-  closed:  'run-badge-closed'
+  closed:  'run-badge-closed',
 }
 
 export default function Kanban() {
   const [statuses, setStatuses] = useState([])
-  const [cards, setCards] = useState([])
-  const [systems, setSystems] = useState([])
+  const [cards, setCards]       = useState([])
+  const [systems, setSystems]   = useState([])
   const [features, setFeatures] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading]   = useState(true)
 
   // Drag & Drop
   const [dragging, setDragging] = useState(null)
   const [dragOver, setDragOver] = useState(null)
 
   // Modal novo card
-  const [modal, setModal] = useState(false)
-  const [form, setForm] = useState({ title: '', description: '', system_id: '', feature_id: '' })
-  const [filteredFeatures, setFilteredFeatures] = useState([])
-  const [creating, setCreating] = useState(false)
+  const [newModal, setNewModal]           = useState(false)
+  const [newForm, setNewForm]             = useState({ title: '', description: '', system_id: '', feature_id: '' })
+  const [newFilteredFeats, setNewFilteredFeats] = useState([])
+  const [creating, setCreating]           = useState(false)
+
+  // Modal detalhe do card
+  const [detailCard, setDetailCard]         = useState(null)
+  const [editForm, setEditForm]             = useState({})
+  const [editFilteredFeats, setEditFilteredFeats] = useState([])
+  const [saving, setSaving]               = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   // Feedback
   const [alert, setAlert] = useState(null)
@@ -36,7 +43,7 @@ export default function Kanban() {
         kanbanAPI.getStatuses(),
         kanbanAPI.getCards(),
         systemsAPI.getAll(),
-        featuresAPI.getAll()
+        featuresAPI.getAll(),
       ])
       setStatuses(sts)
       setCards(cds)
@@ -49,12 +56,10 @@ export default function Kanban() {
     }
   }
 
-  const handleSystemChange = (system_id) => {
-    const filtered = system_id
-      ? features.filter(f => f.system_id === parseInt(system_id))
-      : []
-    setFilteredFeatures(filtered)
-    setForm(prev => ({ ...prev, system_id, feature_id: '' }))
+  // ── Novo card ────────────────────────────────────────────
+  const handleNewSystemChange = (system_id) => {
+    setNewFilteredFeats(system_id ? features.filter(f => f.system_id === parseInt(system_id)) : [])
+    setNewForm(prev => ({ ...prev, system_id, feature_id: '' }))
   }
 
   const showToast = (msg) => {
@@ -63,23 +68,23 @@ export default function Kanban() {
   }
 
   const handleCreate = async () => {
-    if (!form.title.trim() || !form.system_id || !form.feature_id) return
+    if (!newForm.title.trim() || !newForm.system_id || !newForm.feature_id) return
     setCreating(true)
     try {
       const result = await kanbanAPI.createCard({
-        title: form.title.trim(),
-        description: form.description.trim() || null,
-        system_id: parseInt(form.system_id),
-        feature_id: parseInt(form.feature_id)
+        title:       newForm.title.trim(),
+        description: newForm.description.trim() || null,
+        system_id:   parseInt(newForm.system_id),
+        feature_id:  parseInt(newForm.feature_id),
       })
-      setModal(false)
-      setForm({ title: '', description: '', system_id: '', feature_id: '' })
-      setFilteredFeatures([])
-      if (result.runCreated) {
-        showToast(`Run #${result.runInfo.id} criada com ${result.runInfo.scenarioCount} cenário(s).`)
-      } else {
-        showToast('Card criado. Nenhum cenário vinculado encontrado para este sistema + feature.')
-      }
+      setNewModal(false)
+      setNewForm({ title: '', description: '', system_id: '', feature_id: '' })
+      setNewFilteredFeats([])
+      showToast(
+        result.runCreated
+          ? `Run #${result.runInfo.id} criada com ${result.runInfo.scenarioCount} cenário(s).`
+          : 'Card criado. Nenhum cenário vinculado encontrado para este sistema + feature.'
+      )
       loadData()
     } catch (err) {
       setAlert(err.message)
@@ -88,6 +93,58 @@ export default function Kanban() {
     }
   }
 
+  // ── Detalhe do card ──────────────────────────────────────
+  const openCard = (card) => {
+    setDetailCard(card)
+    setEditForm({
+      title:         card.title,
+      description:   card.description || '',
+      system_id:     String(card.system?.id ?? ''),
+      feature_id:    String(card.feature?.id ?? ''),
+      card_status_id: String(card.card_status?.id ?? ''),
+    })
+    setEditFilteredFeats(
+      card.system?.id ? features.filter(f => f.system_id === card.system.id) : []
+    )
+    setConfirmDelete(false)
+  }
+
+  const handleEditSystemChange = (system_id) => {
+    setEditFilteredFeats(system_id ? features.filter(f => f.system_id === parseInt(system_id)) : [])
+    setEditForm(prev => ({ ...prev, system_id, feature_id: '' }))
+  }
+
+  const handleSave = async () => {
+    if (!editForm.title.trim()) return
+    setSaving(true)
+    try {
+      await kanbanAPI.moveCard(detailCard.id, {
+        title:          editForm.title.trim(),
+        description:    editForm.description.trim() || null,
+        system_id:      editForm.system_id   ? parseInt(editForm.system_id)   : undefined,
+        feature_id:     editForm.feature_id  ? parseInt(editForm.feature_id)  : undefined,
+        card_status_id: editForm.card_status_id ? parseInt(editForm.card_status_id) : undefined,
+      })
+      setDetailCard(null)
+      loadData()
+    } catch (err) {
+      setAlert(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    try {
+      await kanbanAPI.deleteCard(detailCard.id)
+      setDetailCard(null)
+      loadData()
+    } catch (err) {
+      setAlert(err.message)
+    }
+  }
+
+  // ── Drag & Drop ──────────────────────────────────────────
   const handleDragStart = (e, card) => {
     setDragging(card)
     e.dataTransfer.effectAllowed = 'move'
@@ -114,8 +171,7 @@ export default function Kanban() {
     setDragging(null)
   }
 
-  const getRunBadgeClass = (statusTitle) =>
-    RUN_BADGE_CLASS[statusTitle?.toLowerCase()] || 'run-badge-planned'
+  const getRunBadgeClass = (title) => RUN_BADGE_CLASS[title?.toLowerCase()] || 'run-badge-planned'
 
   if (loading) return <div className="empty"><div className="empty-text">Carregando...</div></div>
 
@@ -124,26 +180,11 @@ export default function Kanban() {
       {/* Page header */}
       <div className="page-header">
         <h1 className="page-title">Kanban</h1>
-        <button className="btn btn-primary" onClick={() => setModal(true)}>Novo</button>
+        <button className="btn btn-primary" onClick={() => setNewModal(true)}>Novo</button>
       </div>
 
       {/* Toast */}
-      {toast && (
-        <div className="kanban-toast">{toast}</div>
-      )}
-
-      {/* Timeline */}
-      <div className="kanban-timeline">
-        {statuses.map((status, i) => (
-          <div key={status.id} className="kanban-step-wrapper">
-            <div className="kanban-step">
-              <div className="kanban-step-dot">{i + 1}</div>
-              <div className="kanban-step-label">{status.title}</div>
-            </div>
-            {i < statuses.length - 1 && <div className="kanban-step-connector" />}
-          </div>
-        ))}
-      </div>
+      {toast && <div className="kanban-toast">{toast}</div>}
 
       {/* Board */}
       <div className="kanban-board">
@@ -175,18 +216,13 @@ export default function Kanban() {
                     draggable
                     onDragStart={e => handleDragStart(e, card)}
                     onDragEnd={handleDragEnd}
+                    onClick={() => openCard(card)}
                   >
                     <div className="kanban-card-title">{card.title}</div>
-                    <div className="kanban-card-meta">
-                      {card.system && <span className="tag">{card.system.title}</span>}
-                      {card.feature && <span className="tag">{card.feature.title}</span>}
-                    </div>
-                    {card.run ? (
-                      <div className={`run-badge ${getRunBadgeClass(card.run.status_title)}`}>
-                        Run #{card.run.id} · {card.run.scenario_count} cenários · {card.run.status_title}
+                    {card.run && (
+                      <div className={`run-badge run-badge-sm ${getRunBadgeClass(card.run.status_title)}`}>
+                        {card.run.status_title}
                       </div>
-                    ) : (
-                      <div className="run-badge-none">Sem cenários vinculados</div>
                     )}
                   </div>
                 ))}
@@ -196,13 +232,13 @@ export default function Kanban() {
         })}
       </div>
 
-      {/* Modal Novo Card */}
-      {modal && (
-        <div className="modal-overlay" onClick={() => setModal(false)}>
+      {/* Modal: Novo Card */}
+      {newModal && (
+        <div className="modal-overlay" onClick={() => setNewModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Novo Card</h2>
-              <button className="modal-close" onClick={() => setModal(false)}>×</button>
+              <button className="modal-close" onClick={() => setNewModal(false)}>×</button>
             </div>
             <div className="modal-body">
               <div className="form-group">
@@ -210,8 +246,8 @@ export default function Kanban() {
                 <input
                   className="form-input"
                   placeholder="Título do card"
-                  value={form.title}
-                  onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
+                  value={newForm.title}
+                  onChange={e => setNewForm(prev => ({ ...prev, title: e.target.value }))}
                   onKeyDown={e => e.key === 'Enter' && handleCreate()}
                   autoFocus
                 />
@@ -222,8 +258,8 @@ export default function Kanban() {
                   className="form-input"
                   placeholder="Descreva o escopo do card..."
                   rows={3}
-                  value={form.description}
-                  onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+                  value={newForm.description}
+                  onChange={e => setNewForm(prev => ({ ...prev, description: e.target.value }))}
                   style={{ resize: 'vertical' }}
                 />
               </div>
@@ -232,8 +268,8 @@ export default function Kanban() {
                   <label className="form-label">Sistema *</label>
                   <select
                     className="form-input"
-                    value={form.system_id}
-                    onChange={e => handleSystemChange(e.target.value)}
+                    value={newForm.system_id}
+                    onChange={e => handleNewSystemChange(e.target.value)}
                   >
                     <option value="">Selecione</option>
                     {systems.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
@@ -243,25 +279,131 @@ export default function Kanban() {
                   <label className="form-label">Feature *</label>
                   <select
                     className="form-input"
-                    value={form.feature_id}
-                    onChange={e => setForm(prev => ({ ...prev, feature_id: e.target.value }))}
-                    disabled={!form.system_id}
+                    value={newForm.feature_id}
+                    onChange={e => setNewForm(prev => ({ ...prev, feature_id: e.target.value }))}
+                    disabled={!newForm.system_id}
                   >
                     <option value="">Selecione</option>
-                    {filteredFeatures.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                    {newFilteredFeats.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
                   </select>
                 </div>
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setModal(false)}>Cancelar</button>
+              <button className="btn btn-secondary" onClick={() => setNewModal(false)}>Cancelar</button>
               <button
                 className="btn btn-primary"
                 onClick={handleCreate}
-                disabled={creating || !form.title.trim() || !form.system_id || !form.feature_id}
+                disabled={creating || !newForm.title.trim() || !newForm.system_id || !newForm.feature_id}
               >
                 {creating ? 'Criando...' : 'Criar Card'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Detalhe do Card */}
+      {detailCard && (
+        <div className="modal-overlay" onClick={() => setDetailCard(null)}>
+          <div className="modal modal-card-detail" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">{detailCard.title}</h2>
+              <button className="modal-close" onClick={() => setDetailCard(null)}>×</button>
+            </div>
+            <div className="modal-body modal-body-two-col">
+              {/* Coluna esquerda */}
+              <div className="modal-col-main">
+                <div className="form-group">
+                  <label className="form-label">Título</label>
+                  <input
+                    className="form-input"
+                    value={editForm.title}
+                    onChange={e => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Detalhes</label>
+                  <textarea
+                    className="form-input"
+                    rows={5}
+                    value={editForm.description}
+                    onChange={e => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                    style={{ resize: 'vertical' }}
+                    placeholder="Descrição do card..."
+                  />
+                </div>
+                {detailCard.run && (
+                  <div className={`run-badge ${getRunBadgeClass(detailCard.run.status_title)}`}>
+                    Run #{detailCard.run.id} · {detailCard.run.scenario_count} cenário(s) · {detailCard.run.status_title}
+                  </div>
+                )}
+                {!detailCard.run && (
+                  <div className="run-badge-none">Sem cenários vinculados</div>
+                )}
+              </div>
+
+              {/* Coluna direita */}
+              <div className="modal-col-side">
+                <div className="form-group">
+                  <label className="form-label">Sistema</label>
+                  <select
+                    className="form-input"
+                    value={editForm.system_id}
+                    onChange={e => handleEditSystemChange(e.target.value)}
+                  >
+                    <option value="">Selecione</option>
+                    {systems.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Feature</label>
+                  <select
+                    className="form-input"
+                    value={editForm.feature_id}
+                    onChange={e => setEditForm(prev => ({ ...prev, feature_id: e.target.value }))}
+                    disabled={!editForm.system_id}
+                  >
+                    <option value="">Selecione</option>
+                    {editFilteredFeats.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Etapa</label>
+                  <select
+                    className="form-input card-stage-listbox"
+                    size={4}
+                    value={editForm.card_status_id}
+                    onChange={e => setEditForm(prev => ({ ...prev, card_status_id: e.target.value }))}
+                  >
+                    {statuses.map(s => (
+                      <option key={s.id} value={s.id}>{s.title}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer modal-footer-spread">
+              {confirmDelete ? (
+                <>
+                  <span className="delete-confirm-text">Confirmar exclusão?</span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn btn-secondary" onClick={() => setConfirmDelete(false)}>Cancelar</button>
+                    <button className="btn btn-danger" onClick={handleDelete}>Excluir</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>Excluir</button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSave}
+                    disabled={saving || !editForm.title.trim()}
+                  >
+                    {saving ? 'Salvando...' : 'Salvar'}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

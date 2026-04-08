@@ -140,7 +140,7 @@ module.exports = (app, client) => {
     // PATCH: Editar card / mover de etapa
     app.patch('/api/kanban/card/:id', async (req, res) => {
         const { id } = req.params;
-        const { title, description, card_status_id } = req.body;
+        const { title, description, card_status_id, system_id, feature_id } = req.body;
 
         try {
             const cardResult = await client.query('SELECT * FROM t_card WHERE id = $1', [id]);
@@ -186,9 +186,11 @@ module.exports = (app, client) => {
                 UPDATE t_card SET
                     title          = COALESCE($1, title),
                     description    = COALESCE($2, description),
-                    card_status_id = COALESCE($3, card_status_id)
-                WHERE id = $4 RETURNING *
-            `, [title?.trim() || null, description?.trim() || null, card_status_id || null, id]);
+                    card_status_id = COALESCE($3, card_status_id),
+                    system_id      = COALESCE($4, system_id),
+                    feature_id     = COALESCE($5, feature_id)
+                WHERE id = $6 RETURNING *
+            `, [title?.trim() || null, description?.trim() || null, card_status_id || null, system_id || null, feature_id || null, id]);
 
             res.json(await enrichCard(updated.rows[0]));
         } catch (err) {
