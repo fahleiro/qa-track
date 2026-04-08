@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { systemsAPI, featuresAPI, statusAPI, configAPI } from '../services/api'
+import { systemsAPI, featuresAPI, statusAPI, configAPI, resultStatusAPI } from '../services/api'
 
 export default function Config() {
   const [tab, setTab] = useState('systems')
   const [systems, setSystems] = useState([])
   const [features, setFeatures] = useState([])
   const [statuses, setStatuses] = useState([])
+  const [resultStatuses, setResultStatuses] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Inputs de criacao
@@ -13,6 +14,7 @@ export default function Config() {
   const [featureInput, setFeatureInput] = useState('')
   const [featureSystemId, setFeatureSystemId] = useState('')
   const [statusInput, setStatusInput] = useState('')
+  const [resultStatusInput, setResultStatusInput] = useState('')
 
   // Menu de opcoes
   const [menuOpen, setMenuOpen] = useState(null)
@@ -45,14 +47,16 @@ export default function Config() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const [sys, feat, st] = await Promise.all([
+      const [sys, feat, st, rst] = await Promise.all([
         systemsAPI.getAll(),
         featuresAPI.getAll(),
-        statusAPI.getAll()
+        statusAPI.getAll(),
+        resultStatusAPI.getAll()
       ])
       setSystems(sys)
       setFeatures(feat)
       setStatuses(st)
+      setResultStatuses(rst)
     } catch (err) {
       console.error('Erro ao carregar:', err)
     } finally {
@@ -176,8 +180,10 @@ export default function Config() {
         })
       } else if (editType === 'status') {
         await statusAPI.update(editing.id, { title: editForm.title.trim() })
+      } else if (editType === 'result-status') {
+        await resultStatusAPI.update(editing.id, { title: editForm.title.trim() })
       }
-      forceCloseModal() // fix #6: bypass hasChanges check after save
+      forceCloseModal()
       loadData()
     } catch (err) {
       showAlert(err.message)
@@ -247,6 +253,29 @@ export default function Config() {
     showConfirm('Excluir este status?', async () => {
       try {
         await statusAPI.delete(id)
+        loadData()
+      } catch (err) {
+        showAlert(err.message)
+      }
+    })
+  }
+
+  // === STATUS DE RESULTADO ===
+  const createResultStatus = async () => {
+    if (!resultStatusInput.trim()) return
+    try {
+      await resultStatusAPI.create(resultStatusInput.trim())
+      setResultStatusInput('')
+      loadData()
+    } catch (err) {
+      showAlert(err.message)
+    }
+  }
+
+  const deleteResultStatus = async (id) => {
+    showConfirm('Excluir este status de resultado?', async () => {
+      try {
+        await resultStatusAPI.delete(id)
         loadData()
       } catch (err) {
         showAlert(err.message)
@@ -363,7 +392,13 @@ export default function Config() {
           className={`tab ${tab === 'status' ? 'active' : ''}`}
           onClick={() => setTab('status')}
         >
-          Status
+          Status de Cenário
+        </button>
+        <button
+          className={`tab ${tab === 'result-status' ? 'active' : ''}`}
+          onClick={() => setTab('result-status')}
+        >
+          Status de Resultado
         </button>
       </div>
 
@@ -522,7 +557,7 @@ export default function Config() {
             </div>
           )}
 
-          {/* === STATUS === */}
+          {/* === STATUS DE CENÁRIO === */}
           {tab === 'status' && (
             <div className="section">
               <div className="inline-add">
@@ -588,6 +623,73 @@ export default function Config() {
               )}
             </div>
           )}
+
+          {/* === STATUS DE RESULTADO === */}
+          {tab === 'result-status' && (
+            <div className="section">
+              <div className="inline-add">
+                <input
+                  type="text"
+                  className="form-input"
+                  value={resultStatusInput}
+                  onChange={(e) => setResultStatusInput(e.target.value)}
+                  onKeyPress={(e) => handleKeyPress(e, createResultStatus)}
+                  placeholder="Nome do status de resultado"
+                />
+                <button
+                  className="btn btn-primary"
+                  onClick={createResultStatus}
+                  disabled={!resultStatusInput.trim()}
+                >
+                  Adicionar
+                </button>
+              </div>
+
+              <div className="section-header">
+                <span className="section-title">Status de Resultado</span>
+                <span className="section-count">{resultStatuses.length}</span>
+              </div>
+
+              {resultStatuses.length === 0 ? (
+                <div className="empty">
+                  <div className="empty-text">Nenhum status cadastrado</div>
+                </div>
+              ) : (
+                <div className="list">
+                  {resultStatuses.map(st => (
+                    <div key={st.id} className="list-item-wrapper">
+                      <div className="list-item" onClick={(e) => handleCardClick(e, st.id, 'result-status')}>
+                        <div className="list-item-content">
+                          <div className="list-item-title">
+                            <span className="tag tag-id">#{st.id}</span>
+                            {' '}{st.title}
+                          </div>
+                        </div>
+                        <div className="list-item-actions">
+                          <button
+                            className="btn btn-ghost btn-icon"
+                            onClick={(e) => { e.stopPropagation(); deleteResultStatus(st.id) }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                      {menuOpen === st.id && menuType === 'result-status' && (
+                        <div className="action-menu" onClick={(e) => e.stopPropagation()}>
+                          <button className="action-menu-item" onClick={() => openView(st, 'result-status')}>
+                            Visualizar
+                          </button>
+                          <button className="action-menu-item" onClick={() => openEdit(st, 'result-status')}>
+                            Editar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 
@@ -600,7 +702,8 @@ export default function Config() {
                 {viewMode ? 'Visualizar' : 'Editar'}{' '}
                 {editType === 'system' && 'Sistema'}
                 {editType === 'feature' && 'Feature'}
-                {editType === 'status' && 'Status'}
+                {editType === 'status' && 'Status de Cenário'}
+                {editType === 'result-status' && 'Status de Resultado'}
               </h2>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
