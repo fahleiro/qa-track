@@ -65,3 +65,4 @@ Main resources: `/system`, `/feature`, `/scenario`, `/config/status/scenario`, `
 | [`docs/db/TABLES.md`](docs/db/TABLES.md) | Table schemas and column definitions |
 | [`docs/version/v010.md`](docs/version/v010.md) | v0.1.0 release — features and API reference |
 | [`docs/version/v011.md`](docs/version/v011.md) | v0.1.1 release — multi-impact kanban cards + feature filter |
+| [`docs/version/v012.md`](docs/version/v012.md) | v0.1.2 release — block result edits on closed runs |

@@ -1,6 +1,6 @@
 {
   "name": "qa-track-api",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "QA Track API",
   "main": "server.js",
   "scripts": {
