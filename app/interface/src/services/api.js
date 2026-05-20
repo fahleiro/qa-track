@@ -143,3 +143,43 @@ export const configAPI = {
         body: JSON.stringify(jsonData),
     }),
 };
+
+// --- STATUS DE RESULTADO ---
+export const resultStatusAPI = {
+    getAll: () => request('/config/status/result'),
+    create: (title) => request('/config/status/result', {
+        method: 'POST',
+        body: JSON.stringify({ title }),
+    }),
+    update: (id, data) => request(`/config/status/result/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    }),
+    delete: (id) => request(`/config/status/result/${id}`, { method: 'DELETE' }),
+};
+
+// --- KANBAN ---
+export const kanbanAPI = {
+    getStatuses: () => request('/kanban/status'),
+    getCards: () => request('/kanban/card'),
+    getCard: (id) => request(`/kanban/card/${id}`),
+    createCard: (data) => request('/kanban/card', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    moveCard: (id, data) => request(`/kanban/card/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    }),
+    deleteCard: (id) => request(`/kanban/card/${id}`, { method: 'DELETE' }),
+};
+
+// --- RUNS ---
+export const runsAPI = {
+    getAll: () => request('/run'),
+    getById: (id) => request(`/run/${id}`),
+    updateDetailStatus: (detailId, result_status_id) => request(`/run/detail/${detailId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ result_status_id }),
+    }),
+};

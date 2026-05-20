@@ -85,6 +85,69 @@ module.exports = (app, client) => {
             }
             res.status(204).send();
         } catch (err) {
+            if (err.code === '23503') return res.status(409).json({ error: 'Status em uso, não pode ser removido' });
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    // ====================================
+    // STATUS DE RESULTADO (t_result_status)
+    // ====================================
+
+    // GET: Listar status de resultado
+    app.get('/api/config/status/result', async (req, res) => {
+        try {
+            const result = await client.query('SELECT * FROM t_result_status ORDER BY id ASC');
+            res.json(result.rows);
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    // POST: Criar status de resultado
+    app.post('/api/config/status/result', async (req, res) => {
+        const { title } = req.body;
+        if (!title || !title.trim()) return res.status(400).json({ error: 'Título não pode ser vazio' });
+        try {
+            const result = await client.query(
+                'INSERT INTO t_result_status (title) VALUES ($1) RETURNING *',
+                [title.trim()]
+            );
+            res.status(201).json(result.rows[0]);
+        } catch (err) {
+            if (err.code === '23505') return res.status(409).json({ error: 'Status com esse título já existe' });
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    // PATCH: Atualizar status de resultado
+    app.patch('/api/config/status/result/:id', async (req, res) => {
+        const { title } = req.body;
+        if (!title || !title.trim()) return res.status(400).json({ error: 'Título não pode ser vazio' });
+        try {
+            const result = await client.query(
+                'UPDATE t_result_status SET title = $1 WHERE id = $2 RETURNING *',
+                [title.trim(), req.params.id]
+            );
+            if (!result.rows.length) return res.status(404).json({ error: 'Status não encontrado' });
+            res.json(result.rows[0]);
+        } catch (err) {
+            if (err.code === '23505') return res.status(409).json({ error: 'Status com esse título já existe' });
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    // DELETE: Remover status de resultado
+    app.delete('/api/config/status/result/:id', async (req, res) => {
+        try {
+            const result = await client.query(
+                'DELETE FROM t_result_status WHERE id = $1 RETURNING id',
+                [req.params.id]
+            );
+            if (!result.rows.length) return res.status(404).json({ error: 'Status não encontrado' });
+            res.status(204).send();
+        } catch (err) {
+            if (err.code === '23503') return res.status(409).json({ error: 'Status em uso, não pode ser removido' });
             res.status(500).json({ error: err.message });
         }
     });
