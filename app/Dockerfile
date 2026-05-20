@@ -1,5 +1,5 @@
 # ========================================
-# QA Track v0.1.0 - Dockerfile
+# QA Track v0.1.1 - Dockerfile
 # ========================================
 
 # Imagem base com Node.js e Debian

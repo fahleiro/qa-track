@@ -22,5 +22,5 @@ module.exports = (app, client) => {
     kanbanRoutes(app, client);
     runRoutes(app, client);
 
-    console.log('Rotas da API v0.1.0 registradas com sucesso');
+    console.log('Rotas da API v0.1.1 registradas com sucesso');
 };

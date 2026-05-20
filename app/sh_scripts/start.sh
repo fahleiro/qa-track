@@ -2,7 +2,7 @@
 set -e
 
 echo "========================================"
-echo "  QA Track v0.1.0 - Starting..."
+echo "  QA Track v0.1.1 - Starting..."
 echo "========================================"
 
 # Get the directory where this script is located
@@ -41,7 +41,7 @@ UI_PID=$!
 
 echo ""
 echo "========================================"
-echo "  QA Track v0.1.0 - Ready!"
+echo "  QA Track v0.1.1 - Ready!"
 echo "  API:       http://localhost:$API_PORT"
 echo "  Interface: http://localhost:$INTERFACE_PORT"
 echo "  Postgres:  port $POSTGRES_PORT"
