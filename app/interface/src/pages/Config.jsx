@@ -16,6 +16,10 @@ export default function Config() {
   const [statusInput, setStatusInput] = useState('')
   const [resultStatusInput, setResultStatusInput] = useState('')
 
+  // Filtros da lista de features
+  const [featureFilterSystem, setFeatureFilterSystem] = useState('')
+  const [featureSearch, setFeatureSearch] = useState('')
+
   // Menu de opcoes
   const [menuOpen, setMenuOpen] = useState(null)
   const [menuType, setMenuType] = useState('')
@@ -476,7 +480,19 @@ export default function Config() {
           )}
 
           {/* === FEATURES === */}
-          {tab === 'features' && (
+          {tab === 'features' && (() => {
+            const visibleFeatures = features.filter(f => {
+              if (featureFilterSystem && f.system_id !== parseInt(featureFilterSystem)) return false
+              if (featureSearch) {
+                const q = featureSearch.toLowerCase()
+                const inTitle = f.title?.toLowerCase().includes(q)
+                const inId = String(f.id).includes(q)
+                if (!inTitle && !inId) return false
+              }
+              return true
+            })
+            const hasFilter = !!(featureFilterSystem || featureSearch)
+            return (
             <div className="section">
               <div className="inline-add" style={{ flexWrap: 'wrap' }}>
                 <input
@@ -508,18 +524,53 @@ export default function Config() {
                 </button>
               </div>
 
+              <div className="filters">
+                <select
+                  className="filter-select"
+                  value={featureFilterSystem}
+                  onChange={(e) => setFeatureFilterSystem(e.target.value)}
+                >
+                  <option value="">Todos os sistemas</option>
+                  {systems.map(s => (
+                    <option key={s.id} value={s.id}>{s.title}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  className="filter-select"
+                  value={featureSearch}
+                  onChange={(e) => setFeatureSearch(e.target.value)}
+                  placeholder="Pesquisar por ID ou título…"
+                  style={{ flex: '1 1 240px' }}
+                />
+                {hasFilter && (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => { setFeatureFilterSystem(''); setFeatureSearch('') }}
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+
               <div className="section-header">
                 <span className="section-title">Features</span>
-                <span className="section-count">{features.length}</span>
+                <span className="section-count">
+                  {hasFilter ? `${visibleFeatures.length}/${features.length}` : features.length}
+                </span>
               </div>
 
               {features.length === 0 ? (
                 <div className="empty">
                   <div className="empty-text">Nenhuma feature cadastrada</div>
                 </div>
+              ) : visibleFeatures.length === 0 ? (
+                <div className="empty">
+                  <div className="empty-text">Nenhuma feature encontrada com os filtros aplicados</div>
+                </div>
               ) : (
                 <div className="list">
-                  {features.map(feat => (
+                  {visibleFeatures.map(feat => (
                     <div key={feat.id} className="list-item-wrapper">
                       <div className="list-item" onClick={(e) => handleCardClick(e, feat.id, 'feature')}>
                         <div className="list-item-content">
@@ -555,7 +606,8 @@ export default function Config() {
                 </div>
               )}
             </div>
-          )}
+            )
+          })()}
 
           {/* === STATUS DE CENÁRIO === */}
           {tab === 'status' && (
