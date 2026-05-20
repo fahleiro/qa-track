@@ -238,6 +238,9 @@ export default function Runs() {
                     runDetail.scenarios.length === 0 ? (
                       <div className="run-detail-empty">Nenhum cenário nesta run</div>
                     ) : (
+                      (() => {
+                        const isClosed = runDetail.status_title?.toLowerCase() === 'closed'
+                        return (
                       <table className="run-scenarios-table">
                         <thead>
                           <tr>
@@ -246,6 +249,13 @@ export default function Runs() {
                           </tr>
                         </thead>
                         <tbody>
+                          {isClosed && (
+                            <tr>
+                              <td colSpan={2} style={{fontSize: '0.85em', opacity: 0.7, fontStyle: 'italic', padding: '8px 12px'}}>
+                                Run encerrada — resultados não podem ser alterados.
+                              </td>
+                            </tr>
+                          )}
                           {runDetail.scenarios.map(s => (
                             <tr
                               key={s.id}
@@ -257,7 +267,8 @@ export default function Runs() {
                                   className="run-status-select"
                                   value={s.result_status_id || ''}
                                   onChange={e => handleStatusChange(s.id, e.target.value)}
-                                  disabled={!!savingDetail[s.id]}
+                                  disabled={isClosed || !!savingDetail[s.id]}
+                                  title={isClosed ? 'Run encerrada: resultado não pode ser alterado' : undefined}
                                 >
                                   {resultStatuses.map(rs => (
                                     <option key={rs.id} value={rs.id}>{rs.title}</option>
@@ -269,6 +280,8 @@ export default function Runs() {
                           ))}
                         </tbody>
                       </table>
+                        )
+                      })()
                     )
                   ) : null}
                 </div>

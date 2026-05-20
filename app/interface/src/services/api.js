@@ -1,5 +1,5 @@
 /**
- * API Service - v0.1.1
+ * API Service - v0.1.2
  * Serviço centralizado para chamadas à API
  */
 
