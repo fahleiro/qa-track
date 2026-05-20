@@ -67,6 +67,21 @@ module.exports = (app, client) => {
         if (!result_status_id) return res.status(400).json({ error: 'result_status_id é obrigatório' });
 
         try {
+            // Bloqueia alteração se a run já está Closed (card no Kanban em Finalizado)
+            const guard = await client.query(`
+                SELECT rs.title AS run_status
+                FROM t_run_detail rd
+                JOIN t_run_master rm ON rm.id = rd.run_id
+                JOIN t_run_status rs ON rs.id = rm.status_id
+                WHERE rd.id = $1
+            `, [req.params.detailId]);
+            if (!guard.rows.length) return res.status(404).json({ error: 'Detalhe não encontrado' });
+            if (guard.rows[0].run_status?.toLowerCase() === 'closed') {
+                return res.status(409).json({
+                    error: 'Run encerrada (card finalizado): resultado dos cenários não pode ser alterado.'
+                });
+            }
+
             const result = await client.query(
                 'UPDATE t_run_detail SET result_status_id = $1 WHERE id = $2 RETURNING *',
                 [result_status_id, req.params.detailId]
