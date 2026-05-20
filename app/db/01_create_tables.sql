@@ -123,3 +123,22 @@ CREATE TABLE IF NOT EXISTS t_run_detail (
     scenario_id      INTEGER REFERENCES t_scenario(id),
     result_status_id INTEGER REFERENCES t_result_status(id)
 );
+
+-- Tabela de Impacto do Card (N:N de pares sistema/feature por card)
+-- Um card pode ter impacto em múltiplos (sistema, feature) — cascata.
+-- t_card.system_id/feature_id continua existindo como "primary" (o primeiro
+-- par cadastrado), por compatibilidade com queries legadas.
+CREATE TABLE IF NOT EXISTS t_card_impact (
+    card_id    INTEGER NOT NULL REFERENCES t_card(id) ON DELETE CASCADE,
+    system_id  INTEGER NOT NULL REFERENCES t_system(id),
+    feature_id INTEGER NOT NULL REFERENCES t_feature(id),
+    PRIMARY KEY (card_id, system_id, feature_id)
+);
+
+-- Backfill: garantir que todo card existente tenha pelo menos seu par
+-- primário em t_card_impact. Idempotente.
+INSERT INTO t_card_impact (card_id, system_id, feature_id)
+SELECT id, system_id, feature_id
+FROM t_card
+WHERE system_id IS NOT NULL AND feature_id IS NOT NULL
+ON CONFLICT DO NOTHING;
