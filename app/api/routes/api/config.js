@@ -4,7 +4,7 @@
 * ====================================
 */
 
-const CONFIG_VERSION = '0.1.0';
+const CONFIG_VERSION = '0.1.1';
 
 // Tabelas de configuração na ordem de exportação
 const CONFIG_TABLES = [

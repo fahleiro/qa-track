@@ -1,6 +1,6 @@
 /**
  * ====================================
- * QA Track API - v0.1.0
+ * QA Track API - v0.1.1
  * ====================================
  */
 
@@ -61,7 +61,7 @@ async function init() {
         
         // Iniciar servidor
         app.listen(port, '0.0.0.0', () => {
-            console.log(`✓ QA Track API v0.1.0 rodando na porta ${port}`);
+            console.log(`✓ QA Track API v0.1.1 rodando na porta ${port}`);
         });
     } catch (err) {
         console.error('✗ Erro fatal:', err.message);
