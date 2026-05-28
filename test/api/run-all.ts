@@ -1,3 +1,4 @@
+import { run as runAuth } from './00-auth.test'
 import { run as runSystem } from './01-system.test'
 import { run as runFeature } from './02-feature.test'
 import { run as runScenario } from './03-scenario.test'
@@ -14,6 +15,7 @@ async function main(): Promise<void> {
   console.log('╚════════════════════════════════════════════╝\n')
 
   const suites = [
+    { name: '00-auth', fn: runAuth },
     { name: '01-system', fn: runSystem },
     { name: '02-feature', fn: runFeature },
     { name: '03-scenario', fn: runScenario },

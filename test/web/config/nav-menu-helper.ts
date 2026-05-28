@@ -6,6 +6,39 @@ const ACTIVE_COLOR  = 'rgba(26, 26, 26, 1)'     // --text: #1a1a1a
 const INACTIVE_COLOR = 'rgba(115, 115, 115, 1)'  // --text-muted: #737373
 const ACTIVE_BG     = 'rgba(245, 245, 245, 1)'   // --accent-light: #f5f5f5
 
+const TEST_USER = process.env.QA_TEST_USER ?? 'admin'
+const TEST_PASS = process.env.QA_TEST_PASS ?? 'admin'
+
+/**
+ * Garante que o driver está autenticado. Se a página atual for /login
+ * (ou ainda não houve navegação), preenche o formulário e submete.
+ * Idempotente — se já autenticado, retorna imediatamente.
+ */
+export async function ensureLoggedIn(driver: WebDriver): Promise<void> {
+  const currentUrl = await driver.getCurrentUrl()
+  if (!currentUrl.includes('/login') && !currentUrl.startsWith('data:')) {
+    // Já está numa página protegida — provavelmente já logado.
+    const hasHeader = await driver.findElements(By.css('.header-nav'))
+    if (hasHeader.length > 0) return
+  }
+
+  await driver.get(`${CONFIG.BASE_URL}/login`)
+  await driver.wait(until.elementLocated(By.css('input[autocomplete="username"]')), CONFIG.TIMEOUT)
+
+  const userInput = await driver.findElement(By.css('input[autocomplete="username"]'))
+  await userInput.clear()
+  await userInput.sendKeys(TEST_USER)
+
+  const passInput = await driver.findElement(By.css('input[autocomplete="current-password"]'))
+  await passInput.clear()
+  await passInput.sendKeys(TEST_PASS)
+
+  await driver.findElement(By.css('button.login-submit')).click()
+
+  // Espera redirect para fora de /login (rota protegida com nav header).
+  await driver.wait(until.elementLocated(By.css('.header-nav')), CONFIG.TIMEOUT)
+}
+
 export interface NavOption {
   text: string
   href: string
@@ -75,6 +108,14 @@ export async function navigateViaMenu(
   // Garante que o app está carregado com o nav menu visível
   await driver.get(CONFIG.BASE_URL)
   await driver.sleep(800)
+
+  // ProtectedRoute redireciona para /login se não houver sessão JWT.
+  const url = await driver.getCurrentUrl()
+  if (url.includes('/login')) {
+    await ensureLoggedIn(driver)
+    await driver.get(CONFIG.BASE_URL)
+    await driver.sleep(500)
+  }
 
   // Imprime e valida estado inicial (antes do clique)
   const before = await getNavOptions(driver)
