@@ -1,0 +1,31 @@
+# ========================================
+#  QA Track v0.2.1 - Docker Compose
+# ========================================
+#  Sobe o container monolítico (Postgres 13 + API + Frontend) com as
+#  três portas publicadas no host e o data dir do Postgres em volume
+#  nomeado, para que os dados (usuários, config, device farm) NÃO sejam
+#  perdidos ao recriar o container.
+#
+#  Uso:
+#    cd app
+#    docker compose up -d --build
+#
+#  Conexão direta ao banco (conexão livre — pg_hba em modo trust):
+#    host=localhost  port=5432  db=qa_test_track  user=postgres  (sem senha)
+# ========================================
+
+services:
+  qa-track:
+    build: .
+    image: qa-track:latest
+    container_name: qa-track-local
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # API Express
+      - "5173:5173"   # Frontend (Vite)
+      - "5432:5432"   # PostgreSQL — exposto para conexões externas
+    volumes:
+      - qa_pgdata:/var/lib/postgresql/data
+
+volumes:
+  qa_pgdata:

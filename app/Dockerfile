@@ -1,5 +1,5 @@
 # ========================================
-# QA Track v0.1.2 - Dockerfile
+# QA Track v0.2.1 - Dockerfile
 # ========================================
 
 # Imagem base com Node.js e Debian
@@ -41,6 +41,11 @@ RUN dos2unix sh_scripts/*.sh
 
 # Permissões de execução para os scripts
 RUN chmod +x sh_scripts/*.sh
+
+# Portas expostas: API (3000), Frontend Vite (5173) e PostgreSQL (5432).
+# A 5432 é exposta para permitir conexão direta de clientes externos
+# (DBeaver/pgAdmin). A publicação efetiva no host é feita via -p / compose.
+EXPOSE 3000 5173 5432
 
 # Comando de entrada
 CMD ["./sh_scripts/start.sh"]

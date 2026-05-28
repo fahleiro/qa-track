@@ -33,5 +33,5 @@ module.exports = (app, pool) => {
     nodesRoutes(app, pool);
     devicefarmRoutes(app, pool);
 
-    console.log('Rotas da API v0.2.0 registradas: auth, status, scenario, system, feature, config, kanban, run, nodes, devicefarm');
+    console.log('Rotas da API v0.2.1 registradas: auth, status, scenario, system, feature, config, kanban, run, nodes, devicefarm');
 };

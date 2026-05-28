@@ -19,7 +19,7 @@ module.exports = {
     adbPath:         process.env.ADB_PATH          || 'adb',
 
     // Versão do agent — anunciada no register/heartbeat.
-    version:         '0.2.0',
+    version:         '0.2.1',
 
     // Cadência do heartbeat.
     heartbeatIntervalMs: 30 * 1000,
