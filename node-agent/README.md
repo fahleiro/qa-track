@@ -92,3 +92,22 @@ bash run-docker.sh
 `run-docker.sh` sobe o container `--privileged --network host` montando
 `/dev/bus/usb`, `/var/run/usbmuxd`, `/var/lib/lockdown` e `~/.android`.
 O screenshot iOS depende de **Developer Mode ON + DDI montado + `pmd3-tunneld` ativo**.
+
+### Autocorreção plug-and-play (`qa-device-watch`)
+
+Ao desconectar/reconectar o iPhone (ou quando o `usbmuxd` reinicia), o socket e o
+tunnel RemoteXPC ficam *stale*. O serviço systemd **`qa-device-watch`** (instalado
+por `setup-autoheal.sh`) cura isso sozinho, em segundos:
+
+```bash
+PW=<sudo_pass> bash setup-autoheal.sh
+```
+
+| Falha | Detecção | Cura automática |
+|---|---|---|
+| socket usbmuxd stale → iOS some do agent | host vê iOS mas `/agent/devices` não | `docker restart qa-node-agent` |
+| tunnel RemoteXPC stale → screenshot 500 | tunneld (`:49151`) não conhece o udid | `mounter auto-mount` + `restart pmd3-tunneld` |
+| Android offline/unauthorized | `adb devices` no container | `adb reconnect` |
+
+Logs: `journalctl -u qa-device-watch -f`. Android não sofre do problema de socket
+(usa `/dev/bus/usb` direto); só o `adb reconnect` em offline/unauthorized.
