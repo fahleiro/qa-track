@@ -7,6 +7,6 @@
  * ============================================================
  */
 
-const { captureScreenshot } = require('./adbService');
+const { captureScreenshot } = require('./deviceService');
 
 module.exports = { captureScreenshot };

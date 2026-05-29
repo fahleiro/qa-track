@@ -1,6 +1,6 @@
 {
   "name": "qa-track-node-agent",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Agente local que descobre devices via ADB e se anuncia ao QA Track dashboard.",
   "main": "src/server.js",
   "scripts": {

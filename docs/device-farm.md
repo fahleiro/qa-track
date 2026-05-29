@@ -119,4 +119,27 @@ docker exec -it qa-track psql -U postgres -d qa_test_track -c \
   "SELECT * FROM device_farm.t_farm_session ORDER BY ended_at DESC LIMIT 10;"
 ```
 
+## iOS no Linux (v0.3.0)
+
+iOS não usa ADB. A pilha equivalente no Linux é **usbmuxd** (daemon USB) + **libimobiledevice** (CLIs) + **pymobiledevice3** (screenshot via DVT, iOS 17+).
+
+| Função | Android | iOS (Linux) |
+|---|---|---|
+| Listar/metadados | `adb devices -l` + `getprop` | `idevice_id -l` + `ideviceinfo` |
+| Screenshot | `adb exec-out screencap -p` | `pymobiledevice3 developer dvt screenshot` |
+
+Pré-requisitos no host (uma vez):
+
+```bash
+sudo apt-get install -y libimobiledevice-utils usbmuxd
+sudo systemctl enable --now usbmuxd
+# conectar o iPhone e tocar "Confiar"
+pymobiledevice3 amfi reveal-developer-mode          # se o toggle não aparecer nas Settings
+# ligar Modo de Desenvolvedor no device (reinicia)
+bash node-agent/setup-ios-tunnel.sh                 # serviço systemd pmd3-tunneld (RemoteXPC)
+pymobiledevice3 mounter auto-mount                  # monta o Developer Disk Image
+```
+
+O screenshot iOS exige: **Developer Mode ON + DDI montado + `pmd3-tunneld` ativo**. O container do node-agent sobe com `--network host` para alcançar o tunneld (`127.0.0.1:49151`) e a interface do tunnel — ver `node-agent/run-docker.sh`.
+
 Ver também [`node-agent/README.md`](../node-agent/README.md) para instalar um agent em uma máquina nova.

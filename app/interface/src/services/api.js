@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  API Service — v0.2.1
+ *  API Service — v0.3.0
  * ============================================================
  *  Wrapper único de fetch para todas as chamadas à API.
  *  Centraliza:

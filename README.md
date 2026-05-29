@@ -91,4 +91,5 @@ Main resources: `/system`, `/feature`, `/scenario`, `/config/status/scenario`, `
 | [`docs/version/v012.md`](docs/version/v012.md) | v0.1.2 release — block result edits on closed runs |
 | [`docs/version/v020.md`](docs/version/v020.md) | v0.2.0 release — JWT auth + Device Farm (node-agent) |
 | [`docs/version/v021.md`](docs/version/v021.md) | v0.2.1 release — Postgres exposto no host + docker-compose |
+| [`docs/version/v030.md`](docs/version/v030.md) | v0.3.0 release — Device Farm: visualização web + iOS no Linux |
 | [`docs/device-farm.md`](docs/device-farm.md) | Device Farm — arquitetura hub-and-spoke, fluxos e endpoints |

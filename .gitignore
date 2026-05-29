@@ -39,3 +39,10 @@ public/
 
 # local scratch (seed scripts, fixtures, etc)
 _tmp/
+
+# Test artifacts (screenshots, element dumps)
+test/reports/
+
+# node-agent runtime env + playwriter scratch
+node-agent/.env
+.pw_session
