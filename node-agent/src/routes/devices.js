@@ -9,7 +9,7 @@
  * ============================================================
  */
 
-const { getDevices, getDeviceInfo } = require('../adbService');
+const { getDevices, getDeviceInfo } = require('../deviceService');
 
 module.exports = (app) => {
 

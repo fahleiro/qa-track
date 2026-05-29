@@ -26,7 +26,7 @@ export default function DeviceCard({ device }) {
             <div className="device-udid">{shorten(device.udid)}</div>
             <div className="device-meta">
                 {device.manufacturer && <>{device.manufacturer} · </>}
-                Android {device.os_version || '—'}
+                {device.platform === 'ios' ? 'iOS' : 'Android'} {device.os_version || '—'}
             </div>
             <div className="device-meta">node: <strong>{device.node?.name}</strong></div>
 

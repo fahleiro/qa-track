@@ -8,7 +8,7 @@
  */
 
 const config = require('../config');
-const { getDevices } = require('../adbService');
+const { getDevices } = require('../deviceService');
 
 module.exports = (app) => {
     const startedAt = Date.now();

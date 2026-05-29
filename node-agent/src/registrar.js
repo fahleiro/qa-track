@@ -16,7 +16,7 @@
 
 const axios = require('axios');
 const config = require('./config');
-const { getDevices } = require('./adbService');
+const { getDevices } = require('./deviceService');
 
 const http = axios.create({
     baseURL: config.dashboardUrl,

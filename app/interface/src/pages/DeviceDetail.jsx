@@ -155,7 +155,7 @@ export default function DeviceDetail() {
                         <div className="detail-row"><span className="detail-label">UDID:</span> <code style={{ fontSize: 11 }}>{device.udid}</code></div>
                         <div className="detail-row"><span className="detail-label">Modelo:</span> {device.model || '—'}</div>
                         <div className="detail-row"><span className="detail-label">Fabricante:</span> {device.manufacturer || '—'}</div>
-                        <div className="detail-row"><span className="detail-label">Android:</span> {device.os_version || '—'}</div>
+                        <div className="detail-row"><span className="detail-label">{device.platform === 'ios' ? 'iOS' : 'Android'}:</span> {device.os_version || '—'}</div>
                         <div className="detail-row"><span className="detail-label">Plataforma:</span> {device.platform}</div>
                         <div className="detail-row">
                             <span className="detail-label">Node:</span>

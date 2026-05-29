@@ -20,17 +20,40 @@ QA Track is a Software Quality Management System (SQMS) for organizing and track
 
 ## Getting Started
 
-### Docker
+### Docker Compose (recomendado)
+
+Publica as três portas no host e persiste o Postgres em volume nomeado:
+
+```bash
+cd app
+docker compose up -d --build
+```
+
+### Docker (manual)
 
 ```bash
 cd app
 docker build -t qa-track .
-docker run -p 3000:3000 -p 5173:5173 qa-track
+docker run -p 3000:3000 -p 5173:5173 -p 5432:5432 qa-track
 ```
 
 Once running:
 - **UI**: http://localhost:5173
 - **API**: http://localhost:3000/api
+- **PostgreSQL**: `localhost:5432`
+
+### Conexão direta ao banco
+
+A 5432 é exposta para clientes externos (DBeaver/pgAdmin). O `pg_hba` está em modo
+`trust` (sem senha) — adequado para dev local, **não usar exposto em produção**:
+
+| Campo | Valor |
+|-------|-------|
+| Host | `localhost` |
+| Port | `5432` |
+| Database | `qa_test_track` |
+| User | `postgres` |
+| Password | *(vazio — trust)* |
 
 ### Port Configuration
 
@@ -67,4 +90,6 @@ Main resources: `/system`, `/feature`, `/scenario`, `/config/status/scenario`, `
 | [`docs/version/v011.md`](docs/version/v011.md) | v0.1.1 release — multi-impact kanban cards + feature filter |
 | [`docs/version/v012.md`](docs/version/v012.md) | v0.1.2 release — block result edits on closed runs |
 | [`docs/version/v020.md`](docs/version/v020.md) | v0.2.0 release — JWT auth + Device Farm (node-agent) |
+| [`docs/version/v021.md`](docs/version/v021.md) | v0.2.1 release — Postgres exposto no host + docker-compose |
+| [`docs/version/v030.md`](docs/version/v030.md) | v0.3.0 release — Device Farm: visualização web + iOS no Linux |
 | [`docs/device-farm.md`](docs/device-farm.md) | Device Farm — arquitetura hub-and-spoke, fluxos e endpoints |

@@ -63,3 +63,32 @@ A cada 30s, POSTa `heartbeat` com o snapshot atual. O dashboard considera o agen
 
 Quando o usuário lista devices no dashboard, ele faz fan-out chamando
 `GET ${public_url}/agent/devices` em todos os agents online.
+
+## iOS no Linux (v0.3.0)
+
+Suporte a devices iOS (descoberta, metadados e screenshot) sem Mac, via
+`libimobiledevice` + `pymobiledevice3`. **Requer host Linux** (USB não passa
+para container no Windows/Mac).
+
+```bash
+# 1) Ferramentas + daemon USB
+sudo apt-get install -y libimobiledevice-utils usbmuxd
+sudo systemctl enable --now usbmuxd
+
+# 2) Conectar o iPhone e tocar "Confiar"; ligar Modo de Desenvolvedor
+#    (se o toggle não aparecer): pymobiledevice3 amfi reveal-developer-mode
+
+# 3) Tunnel RemoteXPC (iOS 17+) como serviço systemd
+bash setup-ios-tunnel.sh
+
+# 4) Montar o Developer Disk Image (uma vez)
+~/pmd3/bin/pymobiledevice3 mounter auto-mount   # ou pymobiledevice3 do PATH
+
+# 5) Subir o agent dockerizado (Android + iOS)
+docker build -t qa-track-node-agent:0.3.0 .
+bash run-docker.sh
+```
+
+`run-docker.sh` sobe o container `--privileged --network host` montando
+`/dev/bus/usb`, `/var/run/usbmuxd`, `/var/lib/lockdown` e `~/.android`.
+O screenshot iOS depende de **Developer Mode ON + DDI montado + `pmd3-tunneld` ativo**.
