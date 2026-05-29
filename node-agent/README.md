@@ -85,7 +85,7 @@ bash setup-ios-tunnel.sh
 ~/pmd3/bin/pymobiledevice3 mounter auto-mount   # ou pymobiledevice3 do PATH
 
 # 5) Subir o agent dockerizado (Android + iOS)
-docker build -t qa-track-node-agent:0.4.0 .
+docker build -t qa-track-node-agent:0.4.1 .
 bash run-docker.sh
 ```
 

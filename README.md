@@ -93,4 +93,5 @@ Main resources: `/system`, `/feature`, `/scenario`, `/config/status/scenario`, `
 | [`docs/version/v021.md`](docs/version/v021.md) | v0.2.1 release — Postgres exposto no host + docker-compose |
 | [`docs/version/v030.md`](docs/version/v030.md) | v0.3.0 release — Device Farm: visualização web + iOS no Linux |
 | [`docs/version/v040.md`](docs/version/v040.md) | v0.4.0 release — Gravador de interações (POC nativo Android/iOS) |
+| [`docs/version/v041.md`](docs/version/v041.md) | v0.4.1 release — Inspetor de elementos (estilo Appium Inspector) |
 | [`docs/device-farm.md`](docs/device-farm.md) | Device Farm — arquitetura hub-and-spoke, fluxos e endpoints |

@@ -109,8 +109,15 @@ export default function DeviceDetail() {
     const [textVal, setTextVal] = useState('')
     const [appVal, setAppVal] = useState('')
     const [recMsg, setRecMsg] = useState(null)
-    const [elements, setElements] = useState([])
+    const [inspecting, setInspecting] = useState(false)
+    const [inspNodes, setInspNodes] = useState([])
+    const [iosEls, setIosEls] = useState([])
+    const [hoverBox, setHoverBox] = useState(null)
+    const [selNode, setSelNode] = useState(null)
+    const [selIos, setSelIos] = useState(null)
     const dragRef = useRef(null)
+    const imgRef = useRef(null)
+    const hoverNodeRef = useRef(null)
 
     const addEntry = useCallback((entry) => {
         setRecLog(prev => {
@@ -137,7 +144,7 @@ export default function DeviceDetail() {
         }
     }
     const onScreenDown = (e) => {
-        if (!recording || !device?.lock?.is_self || device?.platform === 'ios') return
+        if (inspecting || !recording || !device?.lock?.is_self || device?.platform === 'ios') return
         const img = e.currentTarget.querySelector('img')
         if (!img) return
         e.preventDefault()
@@ -174,22 +181,64 @@ export default function DeviceDetail() {
         try { await deviceFarmAPI.launchApp(udid, appVal); if (recording) addEntry({ action: 'launch', app: appVal }); setTimeout(refreshScreenshot, 800) }
         catch (err) { setRecMsg(err.message) }
     }
-    const doInspect = async () => {
+    const boxOf = (n) => {
+        const img = imgRef.current
+        if (!img || !img.naturalWidth) return null
+        const nw = img.naturalWidth, nh = img.naturalHeight
+        return { left: `${n.x1 / nw * 100}%`, top: `${n.y1 / nh * 100}%`, width: `${(n.x2 - n.x1) / nw * 100}%`, height: `${(n.y2 - n.y1) / nh * 100}%` }
+    }
+    const toggleInspect = async () => {
+        if (inspecting) { setInspecting(false); setHoverBox(null); return }
         try {
             const r = await deviceFarmAPI.getSource(udid)
-            let els = []
             if (r.platform === 'ios') {
-                els = (r.elements || []).map(e => e.caption || e.spoken_description || '(sem rótulo)')
-            } else if (r.xml) {
-                const doc = new DOMParser().parseFromString(r.xml, 'text/xml')
-                els = [...doc.querySelectorAll('node')]
-                    .map(n => n.getAttribute('text') || n.getAttribute('content-desc') || n.getAttribute('resource-id') || n.getAttribute('class'))
-                    .filter(Boolean)
+                setIosEls((r.elements || []).map(e => ({ caption: e.caption || '(sem rótulo)', spoken: e.spoken_description || '', id: e.platform_identifier || '' })))
+                setInspNodes([])
+            } else {
+                const doc = new DOMParser().parseFromString(r.xml || '', 'text/xml')
+                const nodes = [...doc.querySelectorAll('node')].map(n => {
+                    const b = (n.getAttribute('bounds') || '').match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/)
+                    if (!b) return null
+                    return {
+                        x1: +b[1], y1: +b[2], x2: +b[3], y2: +b[4],
+                        attrs: {
+                            'resource-id': n.getAttribute('resource-id') || '',
+                            text: n.getAttribute('text') || '',
+                            'content-desc': n.getAttribute('content-desc') || '',
+                            class: n.getAttribute('class') || '',
+                            clickable: n.getAttribute('clickable') || '',
+                            package: n.getAttribute('package') || '',
+                            bounds: n.getAttribute('bounds') || '',
+                        },
+                    }
+                }).filter(Boolean)
+                setInspNodes(nodes); setIosEls([])
             }
-            setElements(els)
-            if (recording) addEntry({ action: 'inspect', elements: els.length })
-            setRecMsg(`Inspecionado: ${els.length} elementos na tela`)
+            setSelNode(null); setSelIos(null); setHoverBox(null); setInspecting(true); setRecMsg(null)
         } catch (err) { setRecMsg(err.message) }
+    }
+    const onInspMove = (e) => {
+        const img = imgRef.current
+        if (!img || !inspNodes.length) return
+        const rect = img.getBoundingClientRect()
+        const dx = (e.clientX - rect.left) / rect.width * img.naturalWidth
+        const dy = (e.clientY - rect.top) / rect.height * img.naturalHeight
+        let best = null
+        for (const n of inspNodes) {
+            if (dx >= n.x1 && dx <= n.x2 && dy >= n.y1 && dy <= n.y2) {
+                const area = (n.x2 - n.x1) * (n.y2 - n.y1)
+                if (!best || area < best.area) best = { n, area }
+            }
+        }
+        hoverNodeRef.current = best?.n || null
+        setHoverBox(best ? boxOf(best.n) : null)
+    }
+    const onInspClick = () => { if (hoverNodeRef.current) { setSelNode(hoverNodeRef.current); setSelIos(null) } }
+    const suggestLocator = (a) => {
+        if (a['resource-id']) return `id = ${a['resource-id']}`
+        if (a['content-desc']) return `accessibility id = ${a['content-desc']}`
+        if (a.text) return `text = ${a.text}`
+        return `xpath = //${a.class}`
     }
 
     if (loading) return <div className="empty"><div className="empty-text">Carregando…</div></div>
@@ -231,7 +280,16 @@ export default function DeviceDetail() {
                     ) : (
                         <div onMouseDown={onScreenDown} onMouseUp={onScreenUp} onDragStart={e => e.preventDefault()} style={{ background: '#000', borderRadius: 'var(--radius)', overflow: 'hidden', padding: 8, textAlign: 'center', minHeight: 200, cursor: (recording && isMyLock && isAndroid) ? 'crosshair' : 'default', userSelect: 'none' }}>
                             {screenshotSrc ? (
-                                <img src={screenshotSrc} alt="screenshot" draggable={false} style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', userSelect: 'none' }} />
+                                <span style={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
+                                    <img ref={imgRef} src={screenshotSrc} alt="screenshot" draggable={false} style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', userSelect: 'none', display: 'block' }} />
+                                    {inspecting && isAndroid && (
+                                        <div onMouseMove={onInspMove} onMouseLeave={() => setHoverBox(null)} onClick={onInspClick}
+                                            style={{ position: 'absolute', inset: 0, cursor: 'crosshair' }}>
+                                            {hoverBox && <div style={{ position: 'absolute', ...hoverBox, border: '2px solid #4af', background: 'rgba(68,170,255,0.18)', pointerEvents: 'none' }} />}
+                                            {selNode && <div style={{ position: 'absolute', ...boxOf(selNode), border: '2px solid #e05260', pointerEvents: 'none' }} />}
+                                        </div>
+                                    )}
+                                </span>
                             ) : (
                                 <div style={{ color: '#999', padding: 60, fontSize: 13 }}>Carregando screenshot…</div>
                             )}
@@ -258,7 +316,7 @@ export default function DeviceDetail() {
                                 <button className="btn btn-secondary btn-sm" onClick={() => doGesture('home')}    disabled={!isAndroid} title={isAndroid ? '' : 'requer WDA'}>Home</button>
                                 <button className="btn btn-secondary btn-sm" onClick={() => doGesture('back')}    disabled={!isAndroid} title={isAndroid ? '' : 'requer WDA'}>Voltar</button>
                                 <button className="btn btn-secondary btn-sm" onClick={() => doGesture('recents')} disabled={!isAndroid} title={isAndroid ? '' : 'requer WDA'}>Apps</button>
-                                <button className="btn btn-ghost btn-sm" onClick={doInspect}>Inspecionar tela</button>
+                                <button className={`btn btn-sm ${inspecting ? 'btn-danger' : 'btn-ghost'}`} onClick={toggleInspect}>{inspecting ? 'Sair do inspetor' : 'Inspetor'}</button>
                             </div>
                             <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                                 <input placeholder="texto p/ campo focado" value={textVal} onChange={e => setTextVal(e.target.value)} disabled={!isAndroid}
@@ -277,14 +335,43 @@ export default function DeviceDetail() {
                             )}
                             {recMsg && <p style={{ fontSize: 11, color: '#c08', marginTop: 6 }}>{recMsg}</p>}
 
-                            {elements.length > 0 && (
+                            {inspecting && (
                                 <div style={{ marginTop: 10 }}>
-                                    <strong style={{ fontSize: 12 }}>Elementos na tela ({elements.length})</strong>
-                                    <div style={{ maxHeight: 160, overflow: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, marginTop: 4, fontSize: 11 }}>
-                                        {elements.map((el, i) => (
-                                            <div key={i} title={el} style={{ padding: '3px 8px', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{el}</div>
-                                        ))}
-                                    </div>
+                                    {isAndroid ? (
+                                        <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                            Inspetor ON — passe o mouse na tela para destacar, clique para selecionar. ({inspNodes.length} elementos)
+                                        </p>
+                                    ) : (
+                                        <>
+                                            <strong style={{ fontSize: 12 }}>Elementos ({iosEls.length}) — iOS sem coordenadas (boxes exigem WDA)</strong>
+                                            <div style={{ maxHeight: 180, overflow: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, marginTop: 4, fontSize: 11 }}>
+                                                {iosEls.map((el, i) => (
+                                                    <div key={i} onClick={() => { setSelIos(el); setSelNode(null) }} title={el.caption}
+                                                        style={{ padding: '3px 8px', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer', background: selIos === el ? 'rgba(224,82,96,0.12)' : 'transparent' }}>
+                                                        {el.caption}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {(selNode || selIos) && (
+                                        <div style={{ marginTop: 8, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 6, padding: 8, fontSize: 11, fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                                            <strong>Elemento selecionado</strong>
+                                            {selNode && (<>
+                                                {Object.entries(selNode.attrs).filter(([, v]) => v).map(([k, v]) => (
+                                                    <div key={k}><span style={{ color: 'var(--text-muted)' }}>{k}:</span> {v}</div>
+                                                ))}
+                                                <div style={{ marginTop: 4, color: '#4af' }}>locator: {suggestLocator(selNode.attrs)}</div>
+                                            </>)}
+                                            {selIos && (<>
+                                                <div><span style={{ color: 'var(--text-muted)' }}>caption:</span> {selIos.caption}</div>
+                                                <div><span style={{ color: 'var(--text-muted)' }}>spoken:</span> {selIos.spoken}</div>
+                                                <div><span style={{ color: 'var(--text-muted)' }}>identifier:</span> {selIos.id}</div>
+                                                <div style={{ marginTop: 4, color: '#4af' }}>locator (iOS): accessibility id = {selIos.caption.split(',')[0]}</div>
+                                            </>)}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
