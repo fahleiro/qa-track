@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  QA Track API — v0.3.0
+ *  QA Track API — v0.4.0
  * ============================================================
  *  Bootstrap da API Express. Responsabilidades:
  *    1. Esperar Postgres ficar pronto.
@@ -98,7 +98,7 @@ async function init() {
         }, config.lockCleanupIntervalMs);
 
         app.listen(config.apiPort, '0.0.0.0', () => {
-            console.log(`[boot] QA Track API v0.3.0 ouvindo em :${config.apiPort}`);
+            console.log(`[boot] QA Track API v0.4.0 ouvindo em :${config.apiPort}`);
             if (config.jwtSecret === 'change-me') {
                 console.warn('[boot] AVISO: JWT_SECRET está com valor default — defina em produção!');
             }

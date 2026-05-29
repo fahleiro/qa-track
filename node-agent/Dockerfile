@@ -18,7 +18,7 @@
 #      -v /var/lib/lockdown:/var/lib/lockdown \
 #      -v "$HOME/.android:/root/.android" \
 #      --env-file ./.env \
-#      qa-track-node-agent:0.3.0
+#      qa-track-node-agent:0.4.0
 # ============================================================
 
 FROM node:18-bookworm-slim

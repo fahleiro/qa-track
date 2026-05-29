@@ -132,4 +132,32 @@ async function captureIosScreenshot(udid) {
     }
 }
 
-module.exports = { listUdids, getIosDevices, getIosDeviceInfo, captureIosScreenshot };
+// ---------- Interação (gravador) — iOS nível AX (sem WDA) ----------
+
+// Lista de elementos da tela atual via serviço de Acessibilidade (sem WDA).
+// Equivalente parcial ao uiautomator dump; sem coordenadas de tela.
+async function listElements(udid) {
+    assertUdid(udid);
+    const r = await execFileAsync(
+        config.pymobiledevice3Path,
+        ['developer', 'accessibility', 'list-items'],
+        { timeout: 20000, maxBuffer: 8 * 1024 * 1024 }
+    );
+    try { return JSON.parse(r.stdout); } catch { return []; }
+}
+
+// Lança um app por bundle id (via DVT). Ex.: com.apple.Preferences
+async function launchApp(udid, bundleId) {
+    assertUdid(udid);
+    if (!/^[A-Za-z0-9._-]+$/.test(bundleId)) throw new Error('bundleId inválido');
+    await execFileAsync(
+        config.pymobiledevice3Path,
+        ['developer', 'dvt', 'launch', bundleId],
+        { timeout: 20000, maxBuffer: 4 * 1024 * 1024 }
+    );
+}
+
+module.exports = {
+    listUdids, getIosDevices, getIosDeviceInfo, captureIosScreenshot,
+    listElements, launchApp
+};

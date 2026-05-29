@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  API Service — v0.3.0
+ *  API Service — v0.4.0
  * ============================================================
  *  Wrapper único de fetch para todas as chamadas à API.
  *  Centraliza:
@@ -256,4 +256,13 @@ export const deviceFarmAPI = {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.blob();
     },
+
+    // Gravador de interações (v0.4.0-poc)
+    getSource:  (udid)         => request(`/devicefarm/devices/${udid}/source`),
+    foreground: (udid)         => request(`/devicefarm/devices/${udid}/foreground`),
+    tap:        (udid, x, y)   => request(`/devicefarm/devices/${udid}/tap`,     { method: 'POST', body: JSON.stringify({ x, y }) }),
+    gesture:    (udid, action) => request(`/devicefarm/devices/${udid}/gesture`, { method: 'POST', body: JSON.stringify({ action }) }),
+    setText:    (udid, text)   => request(`/devicefarm/devices/${udid}/text`,    { method: 'POST', body: JSON.stringify({ text }) }),
+    swipe:      (udid, x1, y1, x2, y2, duration = 300) => request(`/devicefarm/devices/${udid}/swipe`, { method: 'POST', body: JSON.stringify({ x1, y1, x2, y2, duration }) }),
+    launchApp:  (udid, app)    => request(`/devicefarm/devices/${udid}/launch`,  { method: 'POST', body: JSON.stringify({ app }) }),
 };
