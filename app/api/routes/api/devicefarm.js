@@ -260,6 +260,60 @@ module.exports = (app, pool) => {
         }
     });
 
+    // ============================================================
+    //  Gravador de interações (proxy ao node-agent). v0.4.0-poc.
+    //   - leitura (source/foreground): qualquer usuário autenticado
+    //   - mutação (tap/gesture/text/launch): exige lock do próprio usuário
+    //   - 501 do agent (iOS sem WDA) é propagado
+    // ============================================================
+    async function nodeUrlFor(udid) {
+        const r = await pool.query(`
+            SELECT n.public_url FROM device_farm.t_device d
+            JOIN device_farm.t_node n ON n.id = d.node_id WHERE d.udid = $1
+        `, [udid]);
+        return r.rows[0]?.public_url || null;
+    }
+    async function ownsLock(udid, userId) {
+        const r = await pool.query(
+            'SELECT user_id FROM device_farm.t_device_lock WHERE udid = $1 AND expires_at > NOW()',
+            [udid]
+        );
+        if (!r.rows.length) return { ok: false, code: 409, error: 'Reserve o device antes de interagir' };
+        if (r.rows[0].user_id !== userId) return { ok: false, code: 403, error: 'Device reservado por outro usuário' };
+        return { ok: true };
+    }
+    const fwdErr = (res, err) =>
+        res.status(err.response?.status || 502).json(err.response?.data || { error: 'Falha no node-agent', detail: err.message });
+
+    for (const action of ['tap', 'gesture', 'text', 'swipe', 'launch']) {
+        app.post(`/api/devicefarm/devices/:udid/${action}`, async (req, res) => {
+            try {
+                const lock = await ownsLock(req.params.udid, req.user.id);
+                if (!lock.ok) return res.status(lock.code).json({ error: lock.error });
+                const url = await nodeUrlFor(req.params.udid);
+                if (!url) return res.status(404).json({ error: 'Device não encontrado' });
+                const up = await axios.post(
+                    `${url}/agent/devices/${encodeURIComponent(req.params.udid)}/${action}`,
+                    req.body || {}, { timeout: config.nodeFetchTimeoutMs * 2 }
+                );
+                res.json(up.data);
+            } catch (err) { fwdErr(res, err); }
+        });
+    }
+    for (const action of ['source', 'foreground']) {
+        app.get(`/api/devicefarm/devices/:udid/${action}`, async (req, res) => {
+            try {
+                const url = await nodeUrlFor(req.params.udid);
+                if (!url) return res.status(404).json({ error: 'Device não encontrado' });
+                const up = await axios.get(
+                    `${url}/agent/devices/${encodeURIComponent(req.params.udid)}/${action}`,
+                    { timeout: config.nodeFetchTimeoutMs * 2 }
+                );
+                res.json(up.data);
+            } catch (err) { fwdErr(res, err); }
+        });
+    }
+
     app.get('/api/devicefarm/sessions', async (_req, res, next) => {
         try {
             const r = await pool.query(`

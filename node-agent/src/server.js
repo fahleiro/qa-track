@@ -14,9 +14,10 @@
 const express = require('express');
 const config = require('./config');
 
-const healthRoutes     = require('./routes/health');
-const devicesRoutes    = require('./routes/devices');
-const screenshotRoutes = require('./routes/screenshot');
+const healthRoutes      = require('./routes/health');
+const devicesRoutes     = require('./routes/devices');
+const screenshotRoutes  = require('./routes/screenshot');
+const interactionRoutes = require('./routes/interaction');
 const { startRegistrar } = require('./registrar');
 
 const app = express();
@@ -34,6 +35,7 @@ app.use((_req, res, next) => {
 healthRoutes(app);
 devicesRoutes(app);
 screenshotRoutes(app);
+interactionRoutes(app);
 
 app.listen(config.agentPort, '0.0.0.0', () => {
     console.log(`[agent] HTTP em :${config.agentPort} (name=${config.agentName})`);

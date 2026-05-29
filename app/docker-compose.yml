@@ -1,5 +1,5 @@
 # ========================================
-#  QA Track v0.3.0 - Docker Compose
+#  QA Track v0.4.1 - Docker Compose
 # ========================================
 #  Sobe o container monolítico (Postgres 13 + API + Frontend) com as
 #  três portas publicadas no host e o data dir do Postgres em volume

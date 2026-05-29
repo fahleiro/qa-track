@@ -26,7 +26,7 @@ docker run -d --name qa-node-agent --privileged \
   -v "$HOME/.android:/root/.android" \
   --restart unless-stopped \
   --env-file ./.env \
-  qa-track-node-agent:0.3.0
+  qa-track-node-agent:0.4.1
 
 sleep 10
 echo "--- docker ps ---"

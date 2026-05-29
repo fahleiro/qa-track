@@ -27,7 +27,7 @@ module.exports = {
     pymobiledevice3Path:   process.env.PYMOBILEDEVICE3_PATH    || 'pymobiledevice3',
 
     // Versão do agent — anunciada no register/heartbeat.
-    version:         '0.3.0',
+    version:         '0.4.1',
 
     // Cadência do heartbeat.
     heartbeatIntervalMs: 30 * 1000,

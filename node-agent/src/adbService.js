@@ -113,4 +113,105 @@ async function captureScreenshot(udid) {
     return r.stdout;
 }
 
-module.exports = { getDevices, getDeviceInfo, captureScreenshot };
+// ============================================================
+//  Interação (gravador): tap, gestos, dump de UI, app em foco.
+// ============================================================
+
+const ADB_UDID_RE = /^[A-Za-z0-9._:-]+$/;
+function assertUdid(udid) {
+    if (!udid || !ADB_UDID_RE.test(udid)) throw new Error(`UDID adb inválido: ${udid}`);
+}
+
+const KEYCODES = { home: 'KEYCODE_HOME', back: 'KEYCODE_BACK', recents: 'KEYCODE_APP_SWITCH' };
+
+async function tap(udid, x, y) {
+    assertUdid(udid);
+    await runAdb(`-s ${udid} shell input tap ${Math.round(x)} ${Math.round(y)}`);
+}
+
+async function gesture(udid, action) {
+    assertUdid(udid);
+    const code = KEYCODES[action];
+    if (!code) throw new Error(`gesto inválido: ${action} (use home|back|recents)`);
+    await runAdb(`-s ${udid} shell input keyevent ${code}`);
+}
+
+// Digita texto no campo focado. POC minimalista: charset restrito (seguro contra
+// injeção de shell) e espaço vira %s (como o `input text` espera).
+async function inputText(udid, text) {
+    assertUdid(udid);
+    const t = String(text);
+    if (!/^[A-Za-z0-9 .,@_+\-]*$/.test(t)) {
+        throw new Error('texto: use apenas letras, números e . , @ _ + - espaço (POC)');
+    }
+    await runAdb(`-s ${udid} shell input text ${t.replace(/ /g, '%s')}`);
+}
+
+async function swipe(udid, x1, y1, x2, y2, durationMs = 300) {
+    assertUdid(udid);
+    const n = (v) => Math.round(Number(v) || 0);
+    await runAdb(`-s ${udid} shell input swipe ${n(x1)} ${n(y1)} ${n(x2)} ${n(y2)} ${n(durationMs)}`);
+}
+
+async function launchApp(udid, pkg) {
+    assertUdid(udid);
+    if (!/^[A-Za-z0-9._]+$/.test(pkg)) throw new Error('package inválido');
+    await runAdb(`-s ${udid} shell monkey -p ${pkg} -c android.intent.category.LAUNCHER 1`);
+}
+
+async function dumpUi(udid) {
+    assertUdid(udid);
+    await runAdb(`-s ${udid} shell uiautomator dump /sdcard/qatrack-ui.xml`);
+    const r = await runAdb(`-s ${udid} shell cat /sdcard/qatrack-ui.xml`);
+    return r.stdout;
+}
+
+async function foregroundApp(udid) {
+    assertUdid(udid);
+    const r = await runAdb(`-s ${udid} shell dumpsys window`);
+    const m = r.stdout.match(/mCurrentFocus=Window\{[^ ]+ [^ ]+ ([^}\/]+)\/?([^}]*)\}/);
+    return { package: m ? m[1] : null, activity: m && m[2] ? m[2] : null };
+}
+
+// Parse plano dos <node> do uiautomator dump.
+function parseNodes(xml) {
+    const nodes = [];
+    const re = /<node\b([^>]*?)\/?>/g;
+    let m;
+    while ((m = re.exec(xml))) {
+        const attrs = m[1];
+        const get = (k) => { const a = attrs.match(new RegExp(`${k}="([^"]*)"`)); return a ? a[1] : ''; };
+        const b = get('bounds').match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
+        if (!b) continue;
+        nodes.push({
+            x1: +b[1], y1: +b[2], x2: +b[3], y2: +b[4],
+            resourceId: get('resource-id'), class: get('class'),
+            text: get('text'), contentDesc: get('content-desc'),
+            clickable: get('clickable') === 'true'
+        });
+    }
+    return nodes;
+}
+
+// Menor elemento (mais profundo) que contém o ponto (x,y).
+function elementAtPoint(xml, x, y) {
+    const hits = parseNodes(xml).filter(n => x >= n.x1 && x <= n.x2 && y >= n.y1 && y <= n.y2);
+    if (!hits.length) return null;
+    hits.sort((a, b) => ((a.x2 - a.x1) * (a.y2 - a.y1)) - ((b.x2 - b.x1) * (b.y2 - b.y1)));
+    const n = hits[0];
+    return {
+        resourceId: n.resourceId || null, class: n.class || null,
+        text: n.text || null, contentDesc: n.contentDesc || null,
+        bounds: `[${n.x1},${n.y1}][${n.x2},${n.y2}]`, clickable: n.clickable
+    };
+}
+
+async function elementAt(udid, x, y) {
+    const xml = await dumpUi(udid);
+    return elementAtPoint(xml, x, y);
+}
+
+module.exports = {
+    getDevices, getDeviceInfo, captureScreenshot,
+    tap, gesture, inputText, swipe, launchApp, dumpUi, foregroundApp, elementAt
+};
